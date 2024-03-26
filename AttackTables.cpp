@@ -27,7 +27,7 @@ uint64_t aFile = 0b00000000'10000000'10000000'10000000'10000000'10000000'1000000
 
 
 void generateTables() {
-	generateKnightAttacks();
+    generateKnightAttacks();
     generatePawnAttacksW();
     generatePawnAttacksB();
     generateBishopAttacks();

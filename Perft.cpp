@@ -24,7 +24,7 @@ unsigned long perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoard
 		int source = getMoveSource(moves[i]);
 		int dest = getMoveTarget(moves[i]);
 		int piece = getMovePiece(moves[i]);
-		int capturedPiece = 0;
+		int capturedPiece = 12; //empty space
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			currNodes = perft(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board);
@@ -61,7 +61,7 @@ unsigned long perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], u
 		int source = getMoveSource(moves[i]);
 		int dest = getMoveTarget(moves[i]);
 		int piece = getMovePiece(moves[i]);
-		int capturedPiece = 0;
+		int capturedPiece = 12; //empty space
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			//cout << "Source square: " << notation[getMoveSource(moves[i])] << " End Square: " << notation[getMoveTarget(moves[i])] << " Promotion: " << getMoveIsPromotion(moves[i]) << endl;

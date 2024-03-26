@@ -28,18 +28,18 @@ extern uint64_t notHGFile;
 
 
 //Piece IDs
-const int P = 1;
-const int N = 2;
-const int B = 3;
-const int R = 4;
-const int Q = 5;
-const int K = 6;
-const int p = 7;
-const int n = 8;
-const int b = 9;
-const int r = 10;
-const int q = 11;
-const int k = 12;
+const int P = 0;
+const int N = 1;
+const int B = 2;
+const int R = 3;
+const int Q = 4;
+const int K = 5;
+const int p = 6;
+const int n = 7;
+const int b = 8;
+const int r = 9;
+const int q = 10;
+const int k = 11;
 
 const string notation[64] = {
     "a8","b8","c8","d8","e8","f8","g8","h8",
@@ -60,7 +60,7 @@ const uint64_t bCastleRightsMask = 0b00000000'00000000'00000000'00000000'0000000
 extern unordered_map<int, char> valToPiece;
 extern unordered_map<char, int> pieceToVal;
 
-const int pieceValues[13] = {0, 100, 420, 470, 750, 1400, 1700, 100, 420, 470, 750, 1400, 1700 }; //offset by 1 since P = 1
+const int pieceValues[13] = {100, 420, 470, 750, 1400, 1700, 100, 420, 470, 750, 1400, 1700 }; //offset by 1 since P = 1
 
 const int infinity = 100000;
 /*

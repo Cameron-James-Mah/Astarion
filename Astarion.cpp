@@ -25,6 +25,8 @@
 #include "Position.h"
 #include "Evaluation.h"
 #include "Search.h"
+#include "Zobrist.h"
+#include "TranspositionTable.h"
 
 
 using namespace std;
@@ -60,6 +62,7 @@ int main()
     };
     std::chrono::time_point<std::chrono::system_clock> start, end;
     pieceMaps();
+    initZobrist();
     char board[64] = {
         'r','n','b','q','k','b','n','r',
         'p','p','p','p','p','p','p','p',
@@ -104,6 +107,7 @@ int main()
     string input;
 
     generateTables();
+    initHashmap(128);
     while (getline(cin, input)) { //uci loop
         stringstream inputSS(input);
         string token;
@@ -113,10 +117,11 @@ int main()
         }
         if (tokens[0] == "go") {
             start = std::chrono::system_clock::now();
-            minimaxHelper(color, whiteBoards, blackBoards, miscBoards, 7, board2);
+            negamaxHelper(color, whiteBoards, blackBoards, miscBoards, 7, board2);
             end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
             cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
+            clearHashmap();
         }
         else if (tokens[0] == "uci") {
             cout << "uciok" << endl;
@@ -152,6 +157,7 @@ int main()
             for (int i = 0; i < 64; i++) {
                 board2[i] = pieceToVal[board[i]];
             }
+            computeZobrist(board2);
         }
         else if (tokens[0] == "p") {
             printBoard(board);
@@ -284,6 +290,9 @@ int main()
         }
         else if (tokens[0] == "eval") {
             cout << evaluate(color, whiteBoards, blackBoards, miscBoards, board2);
+        }
+        else if (tokens[0] == "hash") {
+            cout << "Hash: " << zobristKey << endl;
         }
         else {
             cout << "Unknown Command" << endl;

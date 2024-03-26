@@ -12,7 +12,7 @@ int evaluate(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t
     int blackMaterial = 0; //material not including pawns/king
     int wKingIdx = 0; //index of white king
     int bKingIdx = 0; //index of black king
-    int currPiece = 1;
+    int currPiece = 0;
     for (int i = 0; i < 6; i++) {
         uint64_t bitboard = whiteBoards[i];
         unsigned long lsb;
@@ -98,12 +98,11 @@ int evaluate(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t
         score -= kingSquaresMiddleB[bKingIdx];
         score += kingSquaresMiddleW[wKingIdx];
     }
-    /*
+    //return score; //comment/uncomment when switching between negamax and minimax
     if (color == 1) {
         return score;
     }
     else {
         return -score;
-    }*/
-    return score;
+    }
 }

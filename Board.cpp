@@ -8,7 +8,8 @@
 
 
 #include "Globals.h"
-
+#include "Zobrist.h"
+#include "MoveGen.h"
 
 using namespace std;
 
@@ -69,6 +70,7 @@ void printBoard(char board[64]) {
             col = 0;
         }
     }
+    cout << endl << "Hash: " << zobristKey << endl;
 }
 
 void printBoard2(int board[64]) {
@@ -101,6 +103,7 @@ void printBoard2(int board[64]) {
             col = 0;
         }
     }
+    cout << endl << "Hash: " << zobristKey << endl;
 }
 
 void resetBoard(char board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]) {
@@ -452,6 +455,159 @@ void updateMiscBoards(uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t
     miscBoards[1] = ~miscBoards[0];
 }
 
+void makeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color, unsigned long& kingBit) {
+    zobristKey ^= colorHash;
+    if (getMoveIsCapture(move)) {
+        if (getMoveIsEnPassant(move)) {
+            if (color == 1) {
+                capturedPiece = p;
+                zobristKey ^= zobristTable[capturedPiece][dest+8];
+                removeBitBoardPiece(board[dest + 8], dest + 8, whiteBoards, blackBoards, miscBoards);
+                board[dest + 8] = 12;
+            }
+            else {
+                capturedPiece = P;
+                zobristKey ^= zobristTable[capturedPiece][dest - 8];
+                removeBitBoardPiece(board[dest - 8], dest - 8, whiteBoards, blackBoards, miscBoards);
+                board[dest - 8] = 12;
+            }
+        }
+        else {
+            zobristKey ^= zobristTable[board[dest]][dest];
+            capturedPiece = board[dest];
+            removeBitBoardPiece(capturedPiece, dest, whiteBoards, blackBoards, miscBoards);
+        }
+    }
+    if (getMoveIsDoublePush(move)) {
+        if (color == 1) {
+            miscBoards[2] ^= one << (dest + 8);
+        }
+        else {
+            miscBoards[2] ^= one << (dest - 8);
+        }
+        //printBitBoard(miscBoards[2]);
+    }
+    zobristKey ^= zobristTable[piece][source];
+    board[source] = 12;
+    removeBitBoardPiece(piece, source, whiteBoards, blackBoards, miscBoards);
+    if (getMoveIsCastling(move)) {
+        if (dest > source) { //kingside castle
+            zobristKey ^= zobristTable[board[source+3]][source+1];
+            zobristKey ^= zobristTable[board[source + 3]][source + 3];
+            addBitBoardPiece(board[source + 3], source + 1, whiteBoards, blackBoards, miscBoards);
+            removeBitBoardPiece(board[source + 3], source + 3, whiteBoards, blackBoards, miscBoards);
+            board[source + 1] = board[source + 3];
+            board[source + 3] = 12;
+            //miscBoards[3] ^= one << source + 3;
+        }
+        else { //queenside castle
+            zobristKey ^= zobristTable[board[source - 4]][source - 1];
+            zobristKey ^= zobristTable[board[source - 4]][source - 4];
+            addBitBoardPiece(board[source - 4], source - 1, whiteBoards, blackBoards, miscBoards);
+            removeBitBoardPiece(board[source - 4], source - 4, whiteBoards, blackBoards, miscBoards);
+            board[source - 1] = board[source - 4];
+            board[source - 4] = 12;
+            //miscBoards[3] ^= one << source - 4;
+        }
+    }
+
+    if (getMoveIsPromotion(move)) {
+        zobristKey ^= zobristTable[getMoveIsPromotion(move)][dest];
+        board[dest] = getMoveIsPromotion(move);
+        addBitBoardPiece(getMoveIsPromotion(move), dest, whiteBoards, blackBoards, miscBoards);
+    }
+    else {
+        zobristKey ^= zobristTable[piece][dest];
+        board[dest] = piece;
+        addBitBoardPiece(piece, dest, whiteBoards, blackBoards, miscBoards);
+    }
+
+    if (piece == K) {
+        miscBoards[3] |= wCastleRightsMask;
+        miscBoards[3] ^= wCastleRightsMask;
+        //printBitBoard(miscBoards[3]);
+    }
+    else if (piece == k) {
+        miscBoards[3] |= bCastleRightsMask;
+        miscBoards[3] ^= bCastleRightsMask;
+    }
+    else if (piece == R && (one << source) & miscBoards[3] || piece == r && (one << source) & miscBoards[3]) { //moved rook for first time
+        miscBoards[3] ^= one << source;
+    }
+    if (color == 1) {
+        _BitScanForward64(&kingBit, whiteBoards[5]);
+    }
+    else {
+        _BitScanForward64(&kingBit, blackBoards[5]);
+    }
+    updateMiscBoards(whiteBoards, blackBoards, miscBoards);
+}
+
+void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color, uint64_t castleRights) {
+    zobristKey ^= colorHash;
+    zobristKey ^= zobristTable[piece][source];
+    board[source] = piece;
+    addBitBoardPiece(piece, source, whiteBoards, blackBoards, miscBoards);
+    if (board[dest] != 12) {
+        zobristKey ^= zobristTable[board[dest]][dest];
+        board[dest] = 12;
+    }
+    if (getMoveIsPromotion(move)) {
+        removeBitBoardPiece(getMoveIsPromotion(move), dest, whiteBoards, blackBoards, miscBoards);
+    }
+    else {
+        removeBitBoardPiece(piece, dest, whiteBoards, blackBoards, miscBoards);
+    }
+    if (capturedPiece < 12) {
+        if (getMoveIsEnPassant(move)) {
+            if (color == 1) {
+                zobristKey ^= zobristTable[capturedPiece][dest+8];
+                board[dest + 8] = capturedPiece;
+                addBitBoardPiece(capturedPiece, dest + 8, whiteBoards, blackBoards, miscBoards);
+            }
+            else {
+                zobristKey ^= zobristTable[capturedPiece][dest - 8];
+                board[dest - 8] = capturedPiece;
+                addBitBoardPiece(capturedPiece, dest - 8, whiteBoards, blackBoards, miscBoards);
+            }
+        }
+        else {
+            zobristKey ^= zobristTable[capturedPiece][dest];
+            board[dest] = capturedPiece;
+            addBitBoardPiece(capturedPiece, dest, whiteBoards, blackBoards, miscBoards);
+        }
+    }
+    if (getMoveIsCastling(move)) {
+        if (dest > source) { //kingside castle
+            addBitBoardPiece(board[source + 1], source + 3, whiteBoards, blackBoards, miscBoards);
+            removeBitBoardPiece(board[source + 1], source + 1, whiteBoards, blackBoards, miscBoards);
+            zobristKey ^= zobristTable[board[source + 1]][source + 1];
+            zobristKey ^= zobristTable[board[source + 1]][source + 3];
+            board[source + 3] = board[source + 1];
+            board[source + 1] = 12;
+            miscBoards[3] ^= one << source + 3;
+        }
+        else { //queenside castle
+            zobristKey ^= zobristTable[board[source - 1]][source - 1];
+            zobristKey ^= zobristTable[board[source - 1]][source - 4];
+            addBitBoardPiece(board[source - 1], source - 4, whiteBoards, blackBoards, miscBoards);
+            removeBitBoardPiece(board[source - 1], source - 1, whiteBoards, blackBoards, miscBoards);
+            board[source - 4] = board[source - 1];
+            board[source - 1] = 12;
+            miscBoards[3] ^= one << source - 4;
+        }
+    }
+    miscBoards[3] = castleRights;
+    updateMiscBoards(whiteBoards, blackBoards, miscBoards);
+}
+
+void getMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[]) {
+    getPawnMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getKnightMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getBishopAndQueenMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getRookAndQueenMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getKingMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+}
 
 
 
