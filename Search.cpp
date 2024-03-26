@@ -6,6 +6,8 @@
 #include "Globals.h"
 #include "Evaluation.h"
 #include "Search.h"
+#include "Zobrist.h"
+#include "TranspositionTable.h"
 using namespace std;
 
 void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]) {
@@ -15,6 +17,7 @@ void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 	int newColor = color ^ 1;
 	uint64_t castleRights = miscBoards[3];
 	getMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+	sortMoves(idx, moves, board, -1);
 	int bestMove;
 	int currVal;
 	int alpha = -123456;
@@ -24,13 +27,12 @@ void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 		int source = getMoveSource(moves[i]);
 		int dest = getMoveTarget(moves[i]);
 		int piece = getMovePiece(moves[i]);
-		int capturedPiece = 0;
+		int capturedPiece = 12; //empty space
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
-			currVal = negamax(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board, alpha, beta);
-			//cout << currVal << endl;
+			currVal = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board, -beta, -alpha);
 			if (currVal > alpha) {
-				//alpha = currVal;
+				alpha = currVal;
 				bestMove = moves[i];
 			}
 		}
@@ -39,37 +41,52 @@ void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 	cout << "bestmove " << notation[getMoveSource(bestMove)] << notation[getMoveTarget(bestMove)] << endl;
 }
 int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[], int alpha, int beta) {
-	if (depth == 0) {
-		return evaluate(color, whiteBoards, blackBoards, miscBoards, board);
+	int hashMove = -1; 
+	if (int val = probeHash(depth, alpha, beta, hashMove) != noEntry) {
+		return val;
 	}
+	if (depth == 0) {
+		int val = evaluate(color, whiteBoards, blackBoards, miscBoards, board);
+		recordEntry(depth, val, hashFlagExact, -1);
+		return val;
+	}
+	int hashF = hashFlagAlpha;
 	int moves[256];
 	int idx = 0;
 	unsigned long kingBit;
 	int newColor = color ^ 1;
 	uint64_t castleRights = miscBoards[3];
 	getMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+	sortMoves(idx, moves, board, hashMove);
 	int score;
+	int bestMove = -1;
 	for (int i = 0; i < idx; i++) {
 		miscBoards[2] = 0;
 		int source = getMoveSource(moves[i]);
 		int dest = getMoveTarget(moves[i]);
 		int piece = getMovePiece(moves[i]);
-		int capturedPiece = 0;
+		int capturedPiece = 12; //empty space
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board, -beta, -alpha);
-			alpha = max(alpha, score);
-			if (alpha >= beta) {
+			if (score >= beta) {
+				recordEntry(depth, beta, hashFlagBeta, moves[i]);
 				unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
-				break;
+				return beta;
+			}
+			if (score > alpha) {
+				bestMove = moves[i];
+				hashF = hashFlagExact;
+				alpha = score;
 			}
 		}
 		unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
 	}
+	recordEntry(depth, alpha, hashF, bestMove);
 	return alpha;
 }
 
-
+//Minimax stopped before fully implementing tt table
 void minimaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]) {
 	int moves[256];
 	int idx = 0;
@@ -77,6 +94,7 @@ void minimaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 	int newColor = color ^ 1;
 	uint64_t castleRights = miscBoards[3];
 	getMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+	sortMoves(idx, moves, board, -1);
 	int bestMove;
 	int currVal;
 	int alpha = -infinity;
@@ -88,7 +106,7 @@ void minimaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 		int source = getMoveSource(moves[i]);
 		int dest = getMoveTarget(moves[i]);
 		int piece = getMovePiece(moves[i]);
-		int capturedPiece = 0;
+		int capturedPiece = 12;
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			currVal = minimax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, alpha, beta);
@@ -96,12 +114,14 @@ void minimaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 				if (currVal > alpha) {
 					alpha = currVal;
 					bestMove = moves[i];
+					recordEntry(depth, alpha, hashFlagAlpha, moves[i]);
 				}
 			}
 			else {
 				if (currVal < beta) {
 					beta = currVal;
 					bestMove = moves[i];
+					recordEntry(depth, beta, hashFlagBeta, moves[i]);
 				}
 			}
 		}
@@ -111,8 +131,19 @@ void minimaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 }
 
 int minimax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[], int alpha, int beta) {
+	int hashMove = -1; 
+	if (int val = probeHash(depth, alpha, beta, hashMove) != noEntry) {
+		return val;
+	}
 	if (depth == 0) {
-		return evaluate(color, whiteBoards, blackBoards, miscBoards, board);
+		int val = evaluate(color, whiteBoards, blackBoards, miscBoards, board);
+		if (color == 1) {
+			recordEntry(depth, val, hashFlagAlpha, -1);
+		}
+		else {
+			recordEntry(depth, val, hashFlagBeta, -1);
+		}
+		return val;
 	}
 	int moves[256];
 	int idx = 0;
@@ -120,35 +151,40 @@ int minimax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	int newColor = color ^ 1;
 	uint64_t castleRights = miscBoards[3];
 	getMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
-	sortMoves(idx, moves, board);
+	sortMoves(idx, moves, board, hashMove);
 	int score;
 	int maxEval = -infinity;
 	int minEval = infinity;
+	int bestMove = -1;
 	for (int i = 0; i < idx; i++) {
 		miscBoards[2] = 0;
 		int source = getMoveSource(moves[i]);
 		int dest = getMoveTarget(moves[i]);
 		int piece = getMovePiece(moves[i]);
-		int capturedPiece = 0;
+		int capturedPiece = 12;
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			score = minimax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, alpha, beta);
 			if (color == 1) {
 				if (score > alpha) {
+					bestMove = moves[i];
 					maxEval = max(maxEval, score);
 					alpha = max(alpha, score);
 					if (beta <= alpha) {
 						unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
+						recordEntry(depth, alpha, hashFlagAlpha, moves[i]);
 						break;
 					}
 				}
 			}
 			else {
 				if (score < beta) {
+					bestMove = moves[i];
 					minEval = min(minEval, score);
 					beta = min(beta, score);
 					if (beta <= alpha) {
 						unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
+						recordEntry(depth, beta, hashFlagBeta, moves[i]);
 						break;
 					}
 				}
@@ -157,23 +193,32 @@ int minimax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 		unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
 	}
 	if (color == 1) {
+		if (bestMove != -1) {
+			recordEntry(depth, alpha, hashFlagAlpha, bestMove);
+		}
 		return maxEval;
 	}
 	else {
+		if (bestMove != -1) {
+			recordEntry(depth, beta, hashFlagBeta, bestMove);
+		}
 		return minEval;
 	}
 }
 
 
-void sortMoves(int idx, int moves[], int board[]) {
+void sortMoves(int idx, int moves[], int board[], int hashMove) {
 	int* moveScores = new int[idx];
 	for (int i = 0; i < idx; i++) {
-		moveScores[i] = scoreMove(moves[i], board);
+		moveScores[i] = scoreMove(moves[i], board, hashMove);
 	}
 	quickSortMoves(moves, moveScores, 0, idx - 1);
 	delete[] moveScores;
 }
-int scoreMove(int move, int board[]) {
+int scoreMove(int move, int board[], int hashMove) {
+	if (move == hashMove) {
+		return 20001;
+	}
 	if (getMoveIsPromotion(move) == Q || getMoveIsPromotion(move) == q) {
 		return 20000;
 	}
@@ -194,7 +239,6 @@ void quickSortMoves(int moves[], int moveScores[], int low, int high) {
 	{
 		int pivot = moveScores[high];
 		int i = low - 1;
-
 		for (int j = low; j <= high - 1; j++)
 		{
 			if (moveScores[j] > pivot)
@@ -204,14 +248,10 @@ void quickSortMoves(int moves[], int moveScores[], int low, int high) {
 				std::swap(moves[i], moves[j]);
 			}
 		}
-
 		std::swap(moveScores[i + 1], moveScores[high]);
 		std::swap(moves[i + 1], moves[high]);
-
 		int pi = i + 1;
-
 		quickSortMoves(moves, moveScores, low, pi - 1);
 		quickSortMoves(moves, moveScores, pi + 1, high);
 	}
-
 }

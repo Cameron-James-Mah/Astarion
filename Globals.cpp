@@ -45,13 +45,13 @@ unordered_map<int, char> valToPiece;
 unordered_map<char, int> pieceToVal;
 
 void pieceMaps() {
-	valToPiece[1] = 'P'; valToPiece[2] = 'N'; valToPiece[3] = 'B'; valToPiece[4] = 'R'; valToPiece[5] = 'Q'; valToPiece[6] = 'K';
-	valToPiece[7] = 'p'; valToPiece[8] = 'n'; valToPiece[9] = 'b'; valToPiece[10] = 'r'; valToPiece[11] = 'q'; valToPiece[12] = 'k';
-	valToPiece[0] = ' ';
+	valToPiece[0] = 'P'; valToPiece[1] = 'N'; valToPiece[2] = 'B'; valToPiece[3] = 'R'; valToPiece[4] = 'Q'; valToPiece[5] = 'K';
+	valToPiece[6] = 'p'; valToPiece[7] = 'n'; valToPiece[8] = 'b'; valToPiece[9] = 'r'; valToPiece[10] = 'q'; valToPiece[11] = 'k';
+	valToPiece[12] = ' ';
 
-	pieceToVal['P'] = 1; pieceToVal['N'] = 2; pieceToVal['B'] = 3; pieceToVal['R'] = 4; pieceToVal['Q'] = 5; pieceToVal['K'] = 6;
-	pieceToVal['p'] = 7; pieceToVal['n'] = 8; pieceToVal['b'] = 9; pieceToVal['r'] = 10; pieceToVal['q'] = 11; pieceToVal['k'] = 12;
-	pieceToVal[' '] = 0;
+	pieceToVal['P'] = 0; pieceToVal['N'] = 1; pieceToVal['B'] = 2; pieceToVal['R'] = 3; pieceToVal['Q'] = 4; pieceToVal['K'] = 5;
+	pieceToVal['p'] = 6; pieceToVal['n'] = 7; pieceToVal['b'] = 8; pieceToVal['r'] = 9; pieceToVal['q'] = 10; pieceToVal['k'] = 11;
+	pieceToVal[' '] = 12;
 }
 
 
