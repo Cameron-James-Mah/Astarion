@@ -26,6 +26,13 @@ extern uint64_t notABFile;
 extern uint64_t notHFile;
 extern uint64_t notHGFile;
 
+extern int nodes;
+
+extern int killers[30][2];
+
+const int infinity = 200000;
+const int mateVal = 100000;
+
 
 //Piece IDs
 const int P = 0;
@@ -60,9 +67,10 @@ const uint64_t bCastleRightsMask = 0b00000000'00000000'00000000'00000000'0000000
 extern unordered_map<int, char> valToPiece;
 extern unordered_map<char, int> pieceToVal;
 
-const int pieceValues[13] = {100, 420, 470, 750, 1400, 1700, 100, 420, 470, 750, 1400, 1700 }; //offset by 1 since P = 1
+const int pieceValues[12] = {100, 420, 470, 750, 1400, 1700, 100, 420, 470, 750, 1400, 1700 }; 
 
-const int infinity = 100000;
+extern unordered_map<uint64_t, int> repetition;
+
 /*
 int whiteBoardSize;
 int blackBoardSize;

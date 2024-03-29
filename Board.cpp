@@ -13,13 +13,13 @@
 
 using namespace std;
 
-void updateFromFen(char board[64], string fen);
+void updateFromFen(int board[64], string fen, uint64_t miscBoards[], int& color);
 void printBoard(char board[64]);
-void updateBoard(char board[64], vector<string>& moves, uint64_t miscBoards[4]);
+void updateBoard(int board[64], vector<string>& moves, uint64_t miscBoards[4]);
 int getCellNumber(string cell);
 void updateBitBoards(char board[64], uint64_t blackBoards[7], uint64_t whiteBoards[7], uint64_t miscBoards[4]);
 void printBitBoard(uint64_t bitboard);
-void resetBoard(char board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]);
+void resetBoard(int board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]);
 
 void printBitBoard(uint64_t bitboard) {
     int col = 0;
@@ -106,16 +106,16 @@ void printBoard2(int board[64]) {
     cout << endl << "Hash: " << zobristKey << endl;
 }
 
-void resetBoard(char board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]) {
-    char temp[64] = {
-    'r','n','b','q','k','b','n','r',
-    'p','p','p','p','p','p','p','p',
-    ' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',
-    ' ',' ',' ',' ',' ',' ',' ',' ',
-    'P','P','P','P','P','P','P','P',
-    'R','N','B','Q','K','B','N','R'
+void resetBoard(int board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]) {
+    int temp[64] = {
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12
     };
     for (int i = 0; i < 64; i++) {
         board[i] = temp[i];
@@ -128,17 +128,17 @@ void resetBoard(char board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7]
         miscBoards[i] = 0;
     }
 }
-void updateFromFen(char board[64], string fen, uint64_t miscBoards[], int &color) {
+void updateFromFen(int board[64], string fen, uint64_t miscBoards[], int &color) {
     int idx = 0;
-    char temp[64] = {
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' '
+    int temp[64] = {
+        12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12,
+    12,12,12,12,12,12,12,12
     };
     string otherInfo;
     for (int i = 0; i < fen.length(); i++) {
@@ -153,7 +153,7 @@ void updateFromFen(char board[64], string fen, uint64_t miscBoards[], int &color
             continue;
         }
         else {
-            temp[idx] = fen[i];
+            temp[idx] = pieceToVal[fen[i]];
             idx++;
         }
     }
@@ -182,42 +182,44 @@ void updateFromFen(char board[64], string fen, uint64_t miscBoards[], int &color
     memcpy(board, temp, sizeof(temp));
 }
 
-void updateBoard(char board[64], vector<string>& moves, uint64_t miscBoards[4]) {
+void updateBoard(int board[64], vector<string>& moves, uint64_t miscBoards[4]) {
     //special cases include: en passant, castling
     //otherwise just move piece to target location
     //miscBoards[3] = 0b10001001'00000000'00000000'00000000'00000000'00000000'00000000'10001001;
+    computeZobrist(board);
+    repetition[zobristKey]++;
     for (int i = 0; i < moves.size(); i++) {
         miscBoards[2] = 0;
         string from = moves[i].substr(0, 2);
         string to = moves[i].substr(2, 2);
-        if (board[getCellNumber(from)] == 'p' && board[getCellNumber(to)] == ' ') {
+        if (board[getCellNumber(from)] == p && board[getCellNumber(to)] == 12) {
             if ((getCellNumber(to) + getCellNumber(from)) % 2 == 1) { //black en passant
-                board[getCellNumber(to) - 8] = ' ';
+                board[getCellNumber(to) - 8] = 12;
             }
             else if (getCellNumber(to) - getCellNumber(from) == 16) { //double push, update en passant board
                 miscBoards[2] ^= one << (getCellNumber(to) + 8);
             }
         }
-        else if (board[getCellNumber(from)] == 'P' && board[getCellNumber(to)] == ' ') {
+        else if (board[getCellNumber(from)] == P && board[getCellNumber(to)] == 12) {
             if ((getCellNumber(to) + getCellNumber(from)) % 2 == 1) {//white en passant
-                board[getCellNumber(to) + 8] = ' ';
+                board[getCellNumber(to) + 8] = 12;
             }
             else if (getCellNumber(from) - getCellNumber(to) == 16) { //double push, update en passant board
                 miscBoards[2] ^= one << (getCellNumber(to) - 8);
             }
         }
-        else if (board[getCellNumber(from)] == 'k' && getCellNumber(to) - getCellNumber(from) == 2 || board[getCellNumber(from)] == 'K' && getCellNumber(to) - getCellNumber(from) == 2) { //kingside castle
+        else if (board[getCellNumber(from)] == k && getCellNumber(to) - getCellNumber(from) == 2 || board[getCellNumber(from)] == K && getCellNumber(to) - getCellNumber(from) == 2) { //kingside castle
             board[getCellNumber(from) + 1] = board[getCellNumber(to) + 1];
-            board[getCellNumber(to) + 1] = ' ';
+            board[getCellNumber(to) + 1] = 12;
             miscBoards[3] ^= one << (getCellNumber(from));
         }
-        else if (board[getCellNumber(from)] == 'k' && getCellNumber(to) - getCellNumber(from) == -2 || board[getCellNumber(from)] == 'K' && getCellNumber(to) - getCellNumber(from) == -2) { //queenside castle
+        else if (board[getCellNumber(from)] == k && getCellNumber(to) - getCellNumber(from) == -2 || board[getCellNumber(from)] == K && getCellNumber(to) - getCellNumber(from) == -2) { //queenside castle
             board[getCellNumber(from) - 1] = board[getCellNumber(to) - 2];
-            board[getCellNumber(to) - 2] = ' ';
+            board[getCellNumber(to) - 2] = 12;
             miscBoards[3] ^= one << (getCellNumber(from));
         }
-        if (board[getCellNumber(from)] == 'p' && getCellNumber(to) >= 56 || board[getCellNumber(from)] == 'P' && getCellNumber(to) <= 7) { //promotion
-            if (board[getCellNumber(from)] == 'P') {
+        if (board[getCellNumber(from)] == p && getCellNumber(to) >= 56 || board[getCellNumber(from)] == P && getCellNumber(to) <= 7) { //promotion
+            if (board[getCellNumber(from)] == P) {
                 moves[i][4] = toupper(moves[i][4]);
             }
             board[getCellNumber(to)] = moves[i][4];
@@ -225,7 +227,9 @@ void updateBoard(char board[64], vector<string>& moves, uint64_t miscBoards[4]) 
         else {
             board[getCellNumber(to)] = board[getCellNumber(from)];
         }
-        board[getCellNumber(from)] = ' ';
+        board[getCellNumber(from)] = 12;
+        computeZobrist(board);
+        repetition[zobristKey]++;
     }
 }
 
@@ -607,6 +611,13 @@ void getMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint64_t
     getBishopAndQueenMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
     getRookAndQueenMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
     getKingMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+}
+
+void clearKillers() {
+    for (int i = 0; i < 30; i++) {
+        killers[i][0] = 0;
+        killers[i][1] = 0;
+    }
 }
 
 
