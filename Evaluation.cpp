@@ -98,6 +98,16 @@ int evaluate(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t
         score -= kingSquaresMiddleB[bKingIdx];
         score += kingSquaresMiddleW[wKingIdx];
     }
+    else {//endgame
+        score -= kingSquaresEnd[bKingIdx];
+        score += kingSquaresEnd[wKingIdx];
+        if (color == 1) {
+            score -= kingSquaresCorner[bKingIdx];
+        }
+        else {
+            score += kingSquaresCorner[wKingIdx];
+        }
+    }
     //return score; //comment/uncomment when switching between negamax and minimax
     if (color == 1) {
         return score;

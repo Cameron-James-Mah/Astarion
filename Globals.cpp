@@ -41,8 +41,14 @@ const int r = 10;
 const int q = 11;
 const int k = 12;*/
 
+int nodes = 0;
+
+int killers[30][2];
+
 unordered_map<int, char> valToPiece;
 unordered_map<char, int> pieceToVal;
+
+unordered_map<uint64_t, int> repetition;
 
 void pieceMaps() {
 	valToPiece[0] = 'P'; valToPiece[1] = 'N'; valToPiece[2] = 'B'; valToPiece[3] = 'R'; valToPiece[4] = 'Q'; valToPiece[5] = 'K';

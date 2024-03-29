@@ -63,6 +63,7 @@ int main()
     std::chrono::time_point<std::chrono::system_clock> start, end;
     pieceMaps();
     initZobrist();
+    /*
     char board[64] = {
         'r','n','b','q','k','b','n','r',
         'p','p','p','p','p','p','p','p',
@@ -72,7 +73,7 @@ int main()
         ' ',' ',' ',' ',' ',' ',' ',' ',
         'P','P','P','P','P','P','P','P',
         'R','N','B','Q','K','B','N','R'
-    };
+    };*/
     int board2[64];
     
     //Placeholder variables
@@ -107,7 +108,7 @@ int main()
     string input;
 
     generateTables();
-    initHashmap(128);
+    initHashmap(256);
     while (getline(cin, input)) { //uci loop
         stringstream inputSS(input);
         string token;
@@ -116,12 +117,16 @@ int main()
             tokens.push_back(token);
         }
         if (tokens[0] == "go") {
+            nodes = 0;
             start = std::chrono::system_clock::now();
             negamaxHelper(color, whiteBoards, blackBoards, miscBoards, 7, board2);
             end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
-            cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
+            cout << "\nElapsed time: " << elapsed_seconds.count() << "s Total Nodes: " << nodes << endl;
             clearHashmap();
+            clearKillers();
+            nodes = 0;
+            repetition.clear();
         }
         else if (tokens[0] == "uci") {
             cout << "uciok" << endl;
@@ -130,21 +135,30 @@ int main()
             cout << "readyok" << endl;
         }
         else if (tokens[0] == "position") {
-            resetBoard(board, whiteBoards, blackBoards, miscBoards);
+            resetBoard(board2, whiteBoards, blackBoards, miscBoards);
             if (tokens[1] == "fen") {
                 string wholeFen = tokens[2] + " " + tokens[3] + " " + tokens[4];
-                updateFromFen(board, wholeFen, miscBoards, color);
+                updateFromFen(board2, wholeFen, miscBoards, color);
+                auto it = find(tokens.begin(), tokens.end(), "moves");
+                if (it != tokens.end()) {
+                    int index = it - tokens.begin();
+                    vector<string> moves(tokens.begin() + index, tokens.end());
+                    updateBoard(board2, moves, miscBoards);
+                    if ((tokens.size()-index) % 2 == 0) {
+                        color ^= 1;
+                    }
+                }
             }
             else if (tokens[1] == "startpos") {
                 miscBoards[3] = 0b10010001'00000000'00000000'00000000'00000000'00000000'00000000'10010001;
+                updateFromFen(board2, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq", miscBoards, color);
                 if (tokens.size() == 2) { //starting position
                     color = 1;
-                    updateFromFen(board, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq", miscBoards, color);
                 }
                 else {
                     //remember to account for repetition, castlerights
                     vector<string> moves(tokens.begin() + 3, tokens.end());
-                    updateBoard(board, moves, miscBoards);
+                    updateBoard(board2, moves, miscBoards);
                     if (tokens.size() % 2 == 0) {
                         color = 0;
                     }
@@ -153,14 +167,15 @@ int main()
                     }
                 }
             }
-            updateBitBoards(board, blackBoards, whiteBoards, miscBoards);
+            updateBitBoards2(board2, blackBoards, whiteBoards, miscBoards);
+            /*
             for (int i = 0; i < 64; i++) {
                 board2[i] = pieceToVal[board[i]];
-            }
+            }*/
             computeZobrist(board2);
         }
         else if (tokens[0] == "p") {
-            printBoard(board);
+            printBoard2(board2);
         }
         else if (tokens[0] == "cell") {
             cout << getCellNumber(tokens[1]) << endl;
@@ -250,12 +265,9 @@ int main()
             tests.push_back(test("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1", 3605103, 5));
             for (int i = 0; i < tests.size(); i++) {
                 start = std::chrono::system_clock::now();
-                resetBoard(board, whiteBoards, blackBoards, miscBoards);
-                updateFromFen(board, tests[i].fen, miscBoards, color);
-                updateBitBoards(board, blackBoards, whiteBoards, miscBoards);
-                for (int i = 0; i < 64; i++) {
-                    board2[i] = pieceToVal[board[i]];
-                }
+                resetBoard(board2, whiteBoards, blackBoards, miscBoards);
+                updateFromFen(board2, tests[i].fen, miscBoards, color);
+                updateBitBoards2(board2, blackBoards, whiteBoards, miscBoards);
                 unsigned long curr = perft(color, whiteBoards, blackBoards, miscBoards, tests[i].depth, board2);
                 string res = "\n" + tests[i].fen + " Expected nodes: " + to_string(tests[i].result) + " Traversed nodes: " + to_string(curr) + " Depth: " + to_string(tests[i].depth);
                 if (curr == tests[i].result)

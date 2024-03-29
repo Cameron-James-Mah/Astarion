@@ -63,5 +63,12 @@ void recordEntry(int depth, int val, int hashFlag, int bestMove) {
 	newEntry->flag = hashFlag;
 	newEntry->value = val;
 	newEntry->bestMove = bestMove;
-	
+}
+
+Entry* getEntry() {
+	Entry* hashEntry = &hashmap[zobristKey % hashmapSize];
+	if (hashEntry->key == zobristKey) {
+		return hashEntry;
+	}
+	return nullptr;
 }

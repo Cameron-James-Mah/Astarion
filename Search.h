@@ -9,7 +9,7 @@ int minimax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 
 
 //move sorting functions
-void sortMoves(int idx, int moves[], int board[], int hashMove);
-int scoreMove(int move, int board[], int hashMove);
+void sortMoves(int idx, int moves[], int board[], int hashMove, int depth);
+int scoreMove(int move, int board[], int hashMove, int depth);
 void printMoves(int idx, int moves[]);
 void quickSortMoves(int moves[], int moveScores[], int low, int high);
