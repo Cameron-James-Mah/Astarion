@@ -11,12 +11,11 @@
 #include "Zobrist.h"
 #include "MoveGen.h"
 
-using namespace std;
 
-void updateFromFen(int board[64], string fen, uint64_t miscBoards[], int& color);
+void updateFromFen(int board[64], std::string fen, uint64_t miscBoards[], int& color);
 void printBoard(char board[64]);
-void updateBoard(int board[64], vector<string>& moves, uint64_t miscBoards[4]);
-int getCellNumber(string cell);
+void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBoards[4]);
+int getCellNumber(std::string cell);
 void updateBitBoards(char board[64], uint64_t blackBoards[7], uint64_t whiteBoards[7], uint64_t miscBoards[4]);
 void printBitBoard(uint64_t bitboard);
 void resetBoard(int board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]);
@@ -26,84 +25,84 @@ void printBitBoard(uint64_t bitboard) {
     uint64_t temp = 1;
     for (int i = 0; i < 64; i++) {
         if (((temp << i) & bitboard) > 0) {
-            cout << "1 ";
+            std::cout << "1 ";
         }
         else {
-            cout << "0 ";
+            std::cout << "0 ";
         }
         col++;
         if (col == 8) {
-            cout << endl;
+            std::cout << std::endl;
             col = 0;
         }
     }
-    cout << endl << endl;
+    std::cout << std::endl << std::endl;
 }
 
 void printBoard(char board[64]) {
     int col = 0;
     char letter = 'a';
     int row = 8;
-    cout << endl << endl << "  ";
+    std::cout << std::endl << std::endl << "  ";
     for (int i = 0; i < 8; i++) {
-        cout << "   " << letter;
+        std::cout << "   " << letter;
         letter++;
     }
-    cout << endl << " __";
+    std::cout << std::endl << " __";
     for (int j = 0; j < 8; j++) {
-        cout << "|___";
+        std::cout << "|___";
     }
-    cout << "|" << endl << " ";
+    std::cout << "|" << std::endl << " ";
     for (int i = 0; i < 64; i++) {
         if (col == 0) {
-            cout << row;
+            std::cout << row;
             row--;
         }
-        cout << " | " << board[i];
+        std::cout << " | " << board[i];
         col++;
         if (col == 8) {
-            cout << " |" << endl << " __";
+            std::cout << " |" << std::endl << " __";
             for (int j = 0; j < 8; j++) {
-                cout << "|___";
+                std::cout << "|___";
             }
-            cout << "|" << endl << " ";
+            std::cout << "|" << std::endl << " ";
             col = 0;
         }
     }
-    cout << endl << "Hash: " << zobristKey << endl;
+    std::cout << std::endl << "Hash: " << zobristKey << std::endl;
 }
 
 void printBoard2(int board[64]) {
     int col = 0;
     char letter = 'a';
     int row = 8;
-    cout << endl << endl << "  ";
+    std::cout << std::endl << std::endl << "  ";
     for (int i = 0; i < 8; i++) {
-        cout << "   " << letter;
+        std::cout << "   " << letter;
         letter++;
     }
-    cout << endl << " __";
+    std::cout << std::endl << " __";
     for (int j = 0; j < 8; j++) {
-        cout << "|___";
+        std::cout << "|___";
     }
-    cout << "|" << endl << " ";
+    std::cout << "|" << std::endl << " ";
     for (int i = 0; i < 64; i++) {
         if (col == 0) {
-            cout << row;
+            std::cout << row;
             row--;
         }
-        cout << " | " << valToPiece[board[i]];
+        std::cout << " | " << valToPiece[board[i]];
         col++;
         if (col == 8) {
-            cout << " |" << endl << " __";
+            std::cout << " |" << std::endl << " __";
             for (int j = 0; j < 8; j++) {
-                cout << "|___";
+                std::cout << "|___";
             }
-            cout << "|" << endl << " ";
+            std::cout << "|" << std::endl << " ";
             col = 0;
         }
     }
-    cout << endl << "Hash: " << zobristKey << endl;
+    std::cout << std::endl << "Hash: " << zobristKey << std::endl;
 }
 
 void resetBoard(int board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]) {
@@ -128,7 +127,7 @@ void resetBoard(int board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7],
         miscBoards[i] = 0;
     }
 }
-void updateFromFen(int board[64], string fen, uint64_t miscBoards[], int &color) {
+void updateFromFen(int board[64], std::string fen, uint64_t miscBoards[], int &color) {
     int idx = 0;
     int temp[64] = {
         12,12,12,12,12,12,12,12,
@@ -140,7 +139,7 @@ void updateFromFen(int board[64], string fen, uint64_t miscBoards[], int &color)
     12,12,12,12,12,12,12,12,
     12,12,12,12,12,12,12,12
     };
-    string otherInfo;
+    std::string otherInfo;
     for (int i = 0; i < fen.length(); i++) {
         if (fen[i] == ' ') {
             otherInfo = fen.substr(i);
@@ -157,32 +156,32 @@ void updateFromFen(int board[64], string fen, uint64_t miscBoards[], int &color)
             idx++;
         }
     }
-    if (otherInfo.find('w') != string::npos) {
+    if (otherInfo.find('w') != std::string::npos) {
         color = 1;
     }
     else {
         color = 0;
     }
-    if (otherInfo.find('k') != string::npos) {
+    if (otherInfo.find('k') != std::string::npos) {
         miscBoards[3] |= (one << 4);
         miscBoards[3] |= (one << 0);
     }
-    if (otherInfo.find('q') != string::npos) {
+    if (otherInfo.find('q') != std::string::npos) {
         miscBoards[3] |= (one << 4);
         miscBoards[3] |= (one << 7);
     }
-    if (otherInfo.find('K') != string::npos) {
+    if (otherInfo.find('K') != std::string::npos) {
         miscBoards[3] |= (one << 60);
         miscBoards[3] |= (one << 56);
     }
-    if (otherInfo.find('Q') != string::npos) {
+    if (otherInfo.find('Q') != std::string::npos) {
         miscBoards[3] |= (one << 60);
         miscBoards[3] |= (one << 63);
     }
     memcpy(board, temp, sizeof(temp));
 }
 
-void updateBoard(int board[64], vector<string>& moves, uint64_t miscBoards[4]) {
+void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBoards[4]) {
     //special cases include: en passant, castling
     //otherwise just move piece to target location
     //miscBoards[3] = 0b10001001'00000000'00000000'00000000'00000000'00000000'00000000'10001001;
@@ -190,14 +189,14 @@ void updateBoard(int board[64], vector<string>& moves, uint64_t miscBoards[4]) {
     repetition[zobristKey]++;
     for (int i = 0; i < moves.size(); i++) {
         miscBoards[2] = 0;
-        string from = moves[i].substr(0, 2);
-        string to = moves[i].substr(2, 2);
+        std::string from = moves[i].substr(0, 2);
+        std::string to = moves[i].substr(2, 2);
         if (board[getCellNumber(from)] == p && board[getCellNumber(to)] == 12) {
             if ((getCellNumber(to) + getCellNumber(from)) % 2 == 1) { //black en passant
                 board[getCellNumber(to) - 8] = 12;
             }
             else if (getCellNumber(to) - getCellNumber(from) == 16) { //double push, update en passant board
-                miscBoards[2] ^= one << (getCellNumber(to) + 8);
+                miscBoards[2] ^= one << (getCellNumber(to) - 8);
             }
         }
         else if (board[getCellNumber(from)] == P && board[getCellNumber(to)] == 12) {
@@ -205,7 +204,7 @@ void updateBoard(int board[64], vector<string>& moves, uint64_t miscBoards[4]) {
                 board[getCellNumber(to) + 8] = 12;
             }
             else if (getCellNumber(from) - getCellNumber(to) == 16) { //double push, update en passant board
-                miscBoards[2] ^= one << (getCellNumber(to) - 8);
+                miscBoards[2] ^= one << (getCellNumber(to) + 8);
             }
         }
         else if (board[getCellNumber(from)] == k && getCellNumber(to) - getCellNumber(from) == 2 || board[getCellNumber(from)] == K && getCellNumber(to) - getCellNumber(from) == 2) { //kingside castle
@@ -220,9 +219,9 @@ void updateBoard(int board[64], vector<string>& moves, uint64_t miscBoards[4]) {
         }
         if (board[getCellNumber(from)] == p && getCellNumber(to) >= 56 || board[getCellNumber(from)] == P && getCellNumber(to) <= 7) { //promotion
             if (board[getCellNumber(from)] == P) {
-                moves[i][4] = toupper(moves[i][4]);
+                board[getCellNumber(to)] = pieceToVal[toupper(moves[i][4])]; //wtf did i have before?
             }
-            board[getCellNumber(to)] = moves[i][4];
+            //board[getCellNumber(to)] = moves[i][4];
         }
         else {
             board[getCellNumber(to)] = board[getCellNumber(from)];
@@ -334,7 +333,7 @@ void updateBitBoards2(int board[64], uint64_t blackBoards[7], uint64_t whiteBoar
 }
 
 //notation to cell number in board array
-int getCellNumber(string cell) {
+int getCellNumber(std::string cell) {
     int row = -1;
     int col = -1;
     switch (cell[0]) {
@@ -589,7 +588,7 @@ void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoa
             zobristKey ^= zobristTable[board[source + 1]][source + 3];
             board[source + 3] = board[source + 1];
             board[source + 1] = 12;
-            miscBoards[3] ^= one << source + 3;
+            miscBoards[3] ^= one << (source + 3);
         }
         else { //queenside castle
             zobristKey ^= zobristTable[board[source - 1]][source - 1];
@@ -598,7 +597,7 @@ void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoa
             removeBitBoardPiece(board[source - 1], source - 1, whiteBoards, blackBoards, miscBoards);
             board[source - 4] = board[source - 1];
             board[source - 1] = 12;
-            miscBoards[3] ^= one << source - 4;
+            miscBoards[3] ^= one << (source - 4);
         }
     }
     miscBoards[3] = castleRights;

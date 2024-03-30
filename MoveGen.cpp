@@ -12,7 +12,6 @@
 #include "AttackTables.h"
 #include "Position.h"
 
-using namespace std;
 
 int parseMove(int source, int target, int piece, int promotion, int capture, int doublePush, int enPassant, int castling) {
     return source | (target << 6) | (piece << 12) | (promotion << 16) | (capture << 20) | (doublePush << 21) | (enPassant << 22) | (castling << 23);
@@ -829,10 +828,10 @@ void getRookAndQueenMoves(int moves[], int& idx, int color, uint64_t whiteBoards
     }
 }
 void getKingMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[]) {
-    unsigned long lsb, kb;
-    uint64_t enemyPieces, castleRights = miscBoards[3], myKing, myRook;
-    uint64_t ePawn, eKnight, eBishop, eRook, eQueen, eKing;
-    uint64_t mask;
+    unsigned long lsb = 0, kb = 0;
+    uint64_t enemyPieces = 0, castleRights = miscBoards[3], myKing = 0, myRook = 0;
+    uint64_t ePawn = 0, eKnight = 0, eBishop = 0, eRook = 0, eQueen = 0, eKing = 0;
+    uint64_t mask = 0;
     int piece = K;
     if (color == 1) {
         _BitScanReverse64(&lsb, whiteBoards[5]);

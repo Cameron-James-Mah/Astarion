@@ -4,11 +4,11 @@
 #include <random>
 #include <iostream>
 
-uint64_t zobristKey;
+uint64_t zobristKey = 0;
 
-uint64_t zobristTable[12][64];
+uint64_t zobristTable[13][64];
 
-uint64_t colorHash;
+uint64_t colorHash = 0;
 
 std::random_device rd;
 std::mt19937 gen(rd());
