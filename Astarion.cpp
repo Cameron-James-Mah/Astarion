@@ -29,7 +29,7 @@
 #include "TranspositionTable.h"
 
 
-using namespace std;
+//using namespace std;
 
 
 /*
@@ -55,10 +55,10 @@ int main()
     setvbuf(stdin, nullptr, _IONBF, 0);
     setvbuf(stdout, nullptr, _IONBF, 0);
     struct test {
-        string fen;
+        std::string fen;
         unsigned long result;
         int depth;
-        test(string fen, int result, int depth) :fen(fen), result(result), depth(depth) {}
+        test(std::string fen, int result, int depth) :fen(fen), result(result), depth(depth) {}
     };
     std::chrono::time_point<std::chrono::system_clock> start, end;
     pieceMaps();
@@ -105,44 +105,41 @@ int main()
     uint64_t miscBoards[4]; miscBoards[0] = allPieces; miscBoards[1] = empty; miscBoards[2] = enPassant; miscBoards[3] = castleRights;
 
     int color = 1;
-    string input;
+    std::string input;
 
     generateTables();
+    clearHashmap();
     initHashmap(256);
-    while (getline(cin, input)) { //uci loop
-        stringstream inputSS(input);
-        string token;
-        vector<string> tokens;
+    while (std::getline(std::cin, input)) { //uci loop
+        std::stringstream inputSS(input);
+        std::string token;
+        std::vector<std::string> tokens;
         while (getline(inputSS, token, ' ')) {
             tokens.push_back(token);
         }
         if (tokens[0] == "go") {
             nodes = 0;
-            start = std::chrono::system_clock::now();
             negamaxHelper(color, whiteBoards, blackBoards, miscBoards, 7, board2);
-            end = std::chrono::system_clock::now();
-            std::chrono::duration<double> elapsed_seconds = end - start;
-            cout << "\nElapsed time: " << elapsed_seconds.count() << "s Total Nodes: " << nodes << endl;
             clearHashmap();
             clearKillers();
             nodes = 0;
             repetition.clear();
         }
         else if (tokens[0] == "uci") {
-            cout << "uciok" << endl;
+            std::cout << "uciok" << std::endl;
         }
         else if (tokens[0] == "isready") {
-            cout << "readyok" << endl;
+            std::cout << "readyok" << std::endl;
         }
         else if (tokens[0] == "position") {
             resetBoard(board2, whiteBoards, blackBoards, miscBoards);
             if (tokens[1] == "fen") {
-                string wholeFen = tokens[2] + " " + tokens[3] + " " + tokens[4];
+                std::string wholeFen = tokens[2] + " " + tokens[3] + " " + tokens[4];
                 updateFromFen(board2, wholeFen, miscBoards, color);
                 auto it = find(tokens.begin(), tokens.end(), "moves");
                 if (it != tokens.end()) {
-                    int index = it - tokens.begin();
-                    vector<string> moves(tokens.begin() + index, tokens.end());
+                    _int64 index = it - tokens.begin();
+                    std::vector<std::string> moves(tokens.begin() + index, tokens.end());
                     updateBoard(board2, moves, miscBoards);
                     if ((tokens.size()-index) % 2 == 0) {
                         color ^= 1;
@@ -157,7 +154,7 @@ int main()
                 }
                 else {
                     //remember to account for repetition, castlerights
-                    vector<string> moves(tokens.begin() + 3, tokens.end());
+                    std::vector<std::string> moves(tokens.begin() + 3, tokens.end());
                     updateBoard(board2, moves, miscBoards);
                     if (tokens.size() % 2 == 0) {
                         color = 0;
@@ -178,25 +175,25 @@ int main()
             printBoard2(board2);
         }
         else if (tokens[0] == "cell") {
-            cout << getCellNumber(tokens[1]) << endl;
+            std::cout << getCellNumber(tokens[1]) << std::endl;
         }
         else if (tokens[0] == "boards") {
-            cout << "\tWhite Boards" << endl << endl;
+            std::cout << "\tWhite Boards" << std::endl << std::endl;
             for (int i = 0; i < 7; i++) {
                 printBitBoard(whiteBoards[i]);
             }
-            cout << "\tBlack Boards" << endl << endl;
+            std::cout << "\tBlack Boards" << std::endl << std::endl;
             for (int i = 0; i < 7; i++) {
                 printBitBoard(blackBoards[i]);
             }
-            cout << "\tMisc Boards" << endl << endl;
+            std::cout << "\tMisc Boards" << std::endl << std::endl;
             for (int i = 0; i < 4; i++) {
                 printBitBoard(miscBoards[i]);
             }
         }
         else if (tokens[0] == "attacks") {
             for (int i = 0; i < 64; i++) {
-                cout << "Source: " << i << endl;
+                std::cout << "Source: " << i << std::endl;
                 printBitBoard(pawnAttacksB[i]);
             }
             /*
@@ -216,17 +213,17 @@ int main()
             getRookAndQueenMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
             getKingMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
             for (int i = 0; i < idx; i++) {
-                cout << "Source square: " << getMoveSource(moves[i]) << " End Square: " << getMoveTarget(moves[i]) << " Promotion: " << getMoveIsPromotion(moves[i]) << getMoveIsCapture(moves[i]) << " | " << getMoveIsCastling(moves[i]) << " | " << getMoveIsDoublePush(moves[i]) << " | " << getMoveIsEnPassant(moves[i]) << " | " << endl;
+                std::cout << "Source square: " << getMoveSource(moves[i]) << " End Square: " << getMoveTarget(moves[i]) << " Promotion: " << getMoveIsPromotion(moves[i]) << getMoveIsCapture(moves[i]) << " | " << getMoveIsCastling(moves[i]) << " | " << getMoveIsDoublePush(moves[i]) << " | " << getMoveIsEnPassant(moves[i]) << " | " << std::endl;
                 //cout << bitset<26>(moves[i]) << endl << bitset<26>(getMoveIsPromotion(moves[i])) << endl << endl;
             }
-            cout << idx;
+            std::cout << idx;
         }
         else if (tokens[0] == "atk") {
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 64; j++) {
                     printBitBoard(rookAttacks[j][i]);
                 }
-                cout << "---------------------------------------------" << endl;
+                std::cout << "---------------------------------------------" << std::endl;
             }
         }
         else if (tokens[0] == "atk2") {
@@ -254,7 +251,7 @@ int main()
             //printBitBoard(notHGFile);
             //printBitBoard(blackBoards[1]&notHGFile);
             //printBitBoard(bCastleRightsMask);
-            vector<test> tests;
+            std::vector<test> tests;
             bool passed = true;
             tests.push_back(test("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 4865609, 5));
             tests.push_back(test("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ", 97862, 3));
@@ -269,7 +266,7 @@ int main()
                 updateFromFen(board2, tests[i].fen, miscBoards, color);
                 updateBitBoards2(board2, blackBoards, whiteBoards, miscBoards);
                 unsigned long curr = perft(color, whiteBoards, blackBoards, miscBoards, tests[i].depth, board2);
-                string res = "\n" + tests[i].fen + " Expected nodes: " + to_string(tests[i].result) + " Traversed nodes: " + to_string(curr) + " Depth: " + to_string(tests[i].depth);
+                std::string res = "\n" + tests[i].fen + " Expected nodes: " + std::to_string(tests[i].result) + " Traversed nodes: " + std::to_string(curr) + " Depth: " + std::to_string(tests[i].depth);
                 if (curr == tests[i].result)
                 {
                     res += " TEST PASSED\n";
@@ -279,35 +276,35 @@ int main()
                     res += " TEST FAILED\n";
                     passed = false;
                 }
-                cout << res;
+                std::cout << res;
             }
             if (passed) {
-                cout << "\nALL TESTS PASSED\n";
+                std::cout << "\nALL TESTS PASSED\n";
             }
             else {
-                cout << "\nTESTING FAILED\n";
+                std::cout << "\nTESTING FAILED\n";
             }
             end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
-            cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
+            std::cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
         }
         else if (tokens[0] == "perft") { 
             //if tokens[1] is null then no perft
             start = std::chrono::system_clock::now();
-            cout << endl << "Nodes: " << perftHelper(color, whiteBoards, blackBoards, miscBoards, stoi(tokens[1]), board2);
+            std::cout << std::endl << "Nodes: " << perftHelper(color, whiteBoards, blackBoards, miscBoards, stoi(tokens[1]), board2);
             end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
-            cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
+            std::cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
             //perft(color, whiteBoards, blackBoards, miscBoards, stoi(tokens[1]), board2);
         }
         else if (tokens[0] == "eval") {
-            cout << evaluate(color, whiteBoards, blackBoards, miscBoards, board2);
+            std::cout << evaluate(color, whiteBoards, blackBoards, miscBoards, board2);
         }
         else if (tokens[0] == "hash") {
-            cout << "Hash: " << zobristKey << endl;
+            std::cout << "Hash: " << zobristKey << std::endl;
         }
         else {
-            cout << "Unknown Command" << endl;
+            std::cout << "Unknown Command" << std::endl;
         }
     }
 }

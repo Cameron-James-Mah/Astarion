@@ -4,7 +4,7 @@
 #include "Position.h"
 #include "Globals.h"
 #include <iostream>
-using namespace std;
+
 void printBBs(uint64_t bb[]);
 unsigned long perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]);
 unsigned long perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]);
@@ -28,7 +28,7 @@ unsigned long perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoard
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			currNodes = perft(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board);
-			cout << notation[getMoveSource(moves[i])] << notation[getMoveTarget(moves[i])] << ": "  << currNodes << endl;
+			std::cout << notation[getMoveSource(moves[i])] << notation[getMoveTarget(moves[i])] << ": "  << currNodes << std::endl;
 		}
 		unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
 		nodes += currNodes;
@@ -79,18 +79,18 @@ void printBBs(uint64_t bb[]) {
 	for (int k = 0; k < 6; k++) {
 		for (int i = 0; i < 64; i++) {
 			if (((temp << i) & bb[k]) > 0) {
-				cout << "1 ";
+				std::cout << "1 ";
 			}
 			else {
-				cout << "0 ";
+				std::cout << "0 ";
 			}
 			col++;
 			if (col == 8) {
-				cout << endl;
+				std::cout << std::endl;
 				col = 0;
 			}
 		}
-		cout << endl << endl;
+		std::cout << std::endl << std::endl;
 		col = 0;
 	}
 }

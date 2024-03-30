@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <stdint.h>
 
-using namespace std;
+//using namespace std;
 
 
 extern uint64_t pawnAttacksW[64];

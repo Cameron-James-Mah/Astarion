@@ -13,7 +13,6 @@
 #include "AttackTables.h"
 #include "MoveGen.h"
 
-using namespace std;
 
 
 bool isSquareAttacked(int source, int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[]) {
@@ -24,7 +23,7 @@ bool isSquareAttacked(int source, int color, uint64_t whiteBoards[], uint64_t bl
     uint64_t SEmoves = bishopAttacks[source][2];
     uint64_t NWmoves = bishopAttacks[source][1];
     uint64_t NEmoves = bishopAttacks[source][0];
-    unsigned long lsb; uint64_t ePawn; uint64_t eKnight; uint64_t eBishop; uint64_t eRook; uint64_t eQueen; uint64_t eKing;
+    unsigned long lsb = 0; uint64_t ePawn; uint64_t eKnight; uint64_t eBishop; uint64_t eRook; uint64_t eQueen; uint64_t eKing;
     if (color == 1) {
         ePawn = blackBoards[0]; eKnight = blackBoards[1]; eBishop = blackBoards[2]; eRook = blackBoards[3]; eQueen = blackBoards[4]; eKing = blackBoards[5];
     }

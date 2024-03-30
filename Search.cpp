@@ -1,5 +1,7 @@
 #include <stdint.h>
 #include <iostream>
+#include <chrono>
+#include <ctime>
 #include "MoveGen.h"
 #include "Board.h"
 #include "Position.h"
@@ -8,9 +10,11 @@
 #include "Search.h"
 #include "Zobrist.h"
 #include "TranspositionTable.h"
-using namespace std;
+
+std::chrono::time_point<std::chrono::system_clock> start, end;
 
 void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]) {
+	start = std::chrono::system_clock::now();
 	int moves[256];
 	int idx = 0;
 	unsigned long kingBit;
@@ -18,7 +22,7 @@ void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 	uint64_t castleRights = miscBoards[3];
 	getMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
 	sortMoves(idx, moves, board, -1, depth);
-	int bestMove;
+	int bestMove = 1;
 	int currVal;
 	int alpha = -infinity;
 	int beta = infinity;
@@ -32,7 +36,7 @@ void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 		int capturedPiece = 12; //empty space
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
-			currVal = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board, -beta, -alpha);
+			currVal = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board, -beta, -alpha, true);
 			if (currVal > alpha) {
 				alpha = currVal;
 				unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
@@ -40,17 +44,25 @@ void negamaxHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], ui
 				recordEntry(depth, alpha, hashFlagAlpha, moves[i]);
 				bestMove = moves[i];
 			}
-			//cout << currVal << endl;
+			//std::cout << currVal << std::endl;
 		}
 		if (!unmake) { //I have to do this because i update my zobrist key in my make/unmake functions, and I have to update zobrist key before hashing
 			unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
 		}
 		//unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
 	}
-	cout << "bestmove " << notation[getMoveSource(bestMove)] << notation[getMoveTarget(bestMove)] << endl;
-	//cout << "eval: " << alpha << endl;
+	end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	if (getMoveIsPromotion(bestMove)) {
+		std::cout << "bestmove " << notation[getMoveSource(bestMove)] << notation[getMoveTarget(bestMove)] << valToPiece[getMoveIsPromotion(bestMove)] << "\nElapsed time: " << elapsed_seconds.count() << "s Total Nodes: " << nodes << std::endl;
+	}
+	else {
+		std::cout << "bestmove " << notation[getMoveSource(bestMove)] << notation[getMoveTarget(bestMove)] << "\nElapsed time: " << elapsed_seconds.count() << "s Total Nodes: " << nodes << std::endl;
+	}
+	
+	std::cout << "eval: " << alpha << std::endl;
 }
-int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[], int alpha, int beta) {
+int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[], int alpha, int beta, bool tryNull) {
 	int hashMove = -1;
 	/*
 	if (int val = probeHash(depth, alpha, beta, hashMove) != noEntry) {
@@ -61,17 +73,19 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	if (repetition[zobristKey] == 3) { //threefold repetition
 		return 0;
 	}
+	
 	Entry* temp = getEntry();
 	if (temp != nullptr) {
 		if (temp->depth >= depth) {
 			if (temp->flag == hashFlagExact) {
+				repetition[zobristKey]--;
 				return temp->value;
 			}
 			if (temp->flag == hashFlagBeta) {
-				alpha = max(alpha, temp->value);
+				alpha = std::max(alpha, temp->value);
 			}
 			else if (temp->flag == hashFlagAlpha) {
-				beta = min(beta, temp->value);
+				beta = std::min(beta, temp->value);
 			}
 			if (alpha >= beta) {
 				repetition[zobristKey]--;
@@ -86,15 +100,39 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 		repetition[zobristKey]--;
 		return val;
 	}
+	unsigned long kingBit;
+	int newColor = color ^ 1;
+	if (color == 1) {
+		_BitScanForward64(&kingBit, whiteBoards[5]);
+	}
+	else {
+		_BitScanForward64(&kingBit, blackBoards[5]);
+	}
+	if (whiteBoards[5] == 0 || blackBoards[5] == 0) {
+		printBoard2(board);
+	}
+	
+	uint64_t enPassant = miscBoards[2];
+	if (tryNull && !isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards) && depth >= 3 && evaluate(color, whiteBoards, blackBoards, miscBoards, board) >= beta) { //null move, make sure to also check if no pieces
+		//printBoard2(board);
+		miscBoards[2] = 0;
+		int score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 3, board, -beta, -beta+1, false);
+		miscBoards[2] = enPassant;
+		//printBoard2(board);
+		//std::cout << "-------------------------------------------" << std::endl;
+		if (score >= beta) {
+			repetition[zobristKey]--;
+			return beta;
+		}
+	}
+	
 	int hashF = hashFlagAlpha;
 	int moves[256];
 	int idx = 0;
-	unsigned long kingBit;
-	int newColor = color ^ 1;
 	uint64_t castleRights = miscBoards[3];
 	getMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
 	sortMoves(idx, moves, board, hashMove, depth);
-	int score;
+	int score = 0;
 	int bestMove = -1;
 	bool moved = false;
 	for (int i = 0; i < idx; i++) {
@@ -106,7 +144,7 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 		makeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, kingBit);
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			moved = true;
-			score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board, -beta, -alpha);
+			score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board, -beta, -alpha, true);
 			if (score >= beta) {
 				unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
 				recordEntry(depth, beta, hashFlagBeta, moves[i]);
@@ -188,7 +226,7 @@ int scoreMove(int move, int board[], int hashMove, int depth) {
 
 void printMoves(int idx, int moves[]) {
 	for (int i = 0; i < idx; i++) {
-		cout << "Source square: " << getMoveSource(moves[i]) << " End Square: " << getMoveTarget(moves[i]) << " Promotion: " << getMoveIsPromotion(moves[i]) << getMoveIsCapture(moves[i]) << " | " << getMoveIsCastling(moves[i]) << " | " << getMoveIsDoublePush(moves[i]) << " | " << getMoveIsEnPassant(moves[i]) << " | " << endl;
+		std::cout << "Source square: " << getMoveSource(moves[i]) << " End Square: " << getMoveTarget(moves[i]) << " Promotion: " << getMoveIsPromotion(moves[i]) << getMoveIsCapture(moves[i]) << " | " << getMoveIsCastling(moves[i]) << " | " << getMoveIsDoublePush(moves[i]) << " | " << getMoveIsEnPassant(moves[i]) << " | " << std::endl;
 	}
 }
 

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <unordered_map>
 
-using namespace std;
+//using namespace std;
 
 extern uint64_t one;
 
@@ -33,6 +33,9 @@ extern int killers[30][2];
 const int infinity = 200000;
 const int mateVal = 100000;
 
+const int rValue = 3;
+
+
 
 //Piece IDs
 const int P = 0;
@@ -48,7 +51,7 @@ const int r = 9;
 const int q = 10;
 const int k = 11;
 
-const string notation[64] = {
+const std::string notation[64] = {
     "a8","b8","c8","d8","e8","f8","g8","h8",
     "a7","b7","c7","d7","e7","f7","g7","h7",
     "a6","b6","c6","d6","e6","f6","g6","h6",
@@ -64,12 +67,12 @@ const string notation[64] = {
 const uint64_t wCastleRightsMask = 0b10010001'00000000'00000000'00000000'00000000'00000000'00000000'00000000;
 const uint64_t bCastleRightsMask = 0b00000000'00000000'00000000'00000000'00000000'00000000'00000000'10010001;
 
-extern unordered_map<int, char> valToPiece;
-extern unordered_map<char, int> pieceToVal;
+extern std::unordered_map<int, char> valToPiece;
+extern std::unordered_map<char, int> pieceToVal;
 
 const int pieceValues[12] = {100, 420, 470, 750, 1400, 1700, 100, 420, 470, 750, 1400, 1700 }; 
 
-extern unordered_map<uint64_t, int> repetition;
+extern std::unordered_map<uint64_t, int> repetition;
 
 /*
 int whiteBoardSize;
