@@ -43,6 +43,7 @@ const int k = 12;*/
 int nodes = 0;
 
 int killers[30][2];
+int history[12][64];
 
 
 std::unordered_map<int, char> valToPiece;

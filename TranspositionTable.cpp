@@ -1,9 +1,12 @@
 #include <cstdint>
+#include <iostream>
 #include "TranspositionTable.h"
 #include "Zobrist.h"
 
 int hashmapSize = 0;
 Entry* hashmap = nullptr;
+
+int currAge = 0;
 
 void clearHashmap() {
 	Entry* temp = nullptr;
@@ -13,6 +16,7 @@ void clearHashmap() {
 		temp->flag = 0;
 		temp->value = 0;
 		temp->bestMove = 0;
+		temp->age = 0;
 	}
 }
 
@@ -28,6 +32,7 @@ void initHashmap(int mb) {
 	}
 	else {
 		clearHashmap();
+		//std::cout << "Hashmap init with size: " << hashmapSize << std::endl;
 	}
 }
 
@@ -55,14 +60,18 @@ int probeHash(int depth, int alpha, int beta, int &bestMove) {
 
 void recordEntry(int depth, int val, int hashFlag, int bestMove) {
 	Entry* newEntry = &hashmap[zobristKey % hashmapSize];
-	if (newEntry->key == zobristKey && newEntry->depth >= depth) { //dont overwrite entry
+	/*
+	if (newEntry->depth >= depth) { //dont overwrite entry
 		return;
+	}*/
+	if (currAge > newEntry->age || newEntry->depth <= depth) {
+		newEntry->key = zobristKey;
+		newEntry->depth = depth;
+		newEntry->flag = hashFlag;
+		newEntry->value = val;
+		newEntry->bestMove = bestMove;
+		newEntry->age = currAge;
 	}
-	newEntry->key = zobristKey;
-	newEntry->depth = depth;
-	newEntry->flag = hashFlag;
-	newEntry->value = val;
-	newEntry->bestMove = bestMove;
 }
 
 Entry* getEntry() {
