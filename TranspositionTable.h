@@ -8,12 +8,15 @@ const int hashFlagEmpty = -1;
 
 const int noEntry = 99999;
 
+extern int currAge;
+
 struct Entry {
 	uint64_t key;
-	int depth;
-	int flag;
+	uint8_t depth;
+	uint8_t flag;
 	int value;
 	int bestMove;
+	uint8_t age;
 };
 
 extern int hashmapSize;

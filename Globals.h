@@ -29,6 +29,7 @@ extern uint64_t notHGFile;
 extern int nodes;
 
 extern int killers[30][2];
+extern int history[12][64];
 
 const int infinity = 200000;
 const int mateVal = 100000;

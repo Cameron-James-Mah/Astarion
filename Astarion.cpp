@@ -109,6 +109,7 @@ int main()
 
     generateTables();
     clearHashmap();
+    clearHistory();
     initHashmap(256);
     while (std::getline(std::cin, input)) { //uci loop
         std::stringstream inputSS(input);
@@ -119,9 +120,10 @@ int main()
         }
         if (tokens[0] == "go") {
             nodes = 0;
-            negamaxHelper(color, whiteBoards, blackBoards, miscBoards, 7, board2);
+            negamaxHelper(color, whiteBoards, blackBoards, miscBoards, 8, board2);
             clearHashmap();
             clearKillers();
+            clearHistory();
             nodes = 0;
             repetition.clear();
         }
