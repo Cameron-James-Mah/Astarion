@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <stdint.h>
 #include <intrin.h>
+#include <bitset>
 
 
 #include "Globals.h"
@@ -19,6 +20,7 @@ int getCellNumber(std::string cell);
 void updateBitBoards(char board[64], uint64_t blackBoards[7], uint64_t whiteBoards[7], uint64_t miscBoards[4]);
 void printBitBoard(uint64_t bitboard);
 void resetBoard(int board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]);
+int getMaterialValueForTime(int piece);
 
 void printBitBoard(uint64_t bitboard) {
     int col = 0;
@@ -612,6 +614,14 @@ void getMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint64_t
     getKingMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
 }
 
+void getCaptures(int moves[], int& idx, int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[]) {
+    getPawnCaptures(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getKnightCaptures(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getBishopAndQueenCaptures(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getRookAndQueenCaptures(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+    getKingCaptures(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+}
+
 void clearKillers() {
     for (int i = 0; i < 30; i++) {
         killers[i][0] = 0;
@@ -627,6 +637,57 @@ void clearHistory() {
     }
 }
 
+int getMaterialCount(uint64_t whiteBoards[], uint64_t blackBoards[]) {
+    int material = 0;
+    int currPiece = P;
+    for (int i = 0; i < 5; i++) {
+        std::bitset<64> b(whiteBoards[i]);
+        material += getMaterialValueForTime(currPiece) * b.count();
+        std::bitset<64> b2(blackBoards[i]);
+        material += getMaterialValueForTime(currPiece+6) * b2.count();
+        currPiece++;
+    }
+    return material;
+}
+
+int estimatedHalfMoves(int material) {
+    int res = 0;
+    if (material < 2000)
+    {
+        res = material / 100 + 10;
+    }
+    else if (material <= 6000)
+    {
+        res = ((material / 100) * 3) / 8 + 22;
+    }
+    else
+    {
+        res = material / 100 * 5 / 4 - 30;
+    }
+    if (75 < res)
+    {
+        return 75;
+    }
+    return res;
+}
+
+int getMaterialValueForTime(int piece) {
+    switch (piece)
+    {
+    case P: case p:
+        return 100;
+    case N: case n:
+        return 420;
+    case B: case b:
+        return 480;
+    case R: case r:
+        return 750;
+    case Q: case q:
+        return 1400;
+    default:
+        return 0;
+    }
+}
 
 
 
