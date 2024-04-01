@@ -29,10 +29,11 @@ void initHashmap(int mb) {
 	hashmap = new Entry[hashmapSize];
 	if (hashmap == nullptr) { //not enough available memory
 		initHashmap(mb / 2);
+		std::cout << "Resizing hashtable with size: " << hashmapSize/2 << std::endl;
 	}
 	else {
 		clearHashmap();
-		//std::cout << "Hashmap init with size: " << hashmapSize << std::endl;
+		std::cout << "Hashmap init with size: " << hashmapSize << std::endl;
 	}
 }
 

@@ -6,10 +6,10 @@
 #include <iostream>
 
 void printBBs(uint64_t bb[]);
-unsigned long perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]);
-unsigned long perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]);
+uint64_t perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]);
+uint64_t perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]);
 
-unsigned long perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]) {
+uint64_t perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]) {
 	int moves[256];
 	int idx = 0;
 	int nodes = 0;
@@ -40,7 +40,7 @@ unsigned long perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoard
 	return nodes;
 }
 
-unsigned long perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]) {
+uint64_t perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[]) {
 	if (depth == 0) {
 		/*
 		printBoard2(board);

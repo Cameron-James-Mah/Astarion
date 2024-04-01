@@ -27,6 +27,8 @@ extern uint64_t notHFile;
 extern uint64_t notHGFile;
 
 extern int nodes;
+extern int qNodes;
+extern int pvLength;
 
 extern int killers[30][2];
 extern int history[12][64];
@@ -36,6 +38,10 @@ const int mateVal = 100000;
 
 const int rValue = 3;
 
+const int qDepth = 6;
+
+extern bool stop;
+const int defaultDepth = 8;
 
 
 //Piece IDs

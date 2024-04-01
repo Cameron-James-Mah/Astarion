@@ -16,6 +16,8 @@
 #include <unordered_map>
 #include <chrono>
 #include <ctime>
+#include <thread>
+#include <future>
 
 #include "AttackTables.h"
 #include "MoveGen.h"
@@ -28,26 +30,15 @@
 #include "Zobrist.h"
 #include "TranspositionTable.h"
 
-
 //using namespace std;
 
-
-/*
-* int P = 1;
-int N = 2;
-int B = 3;
-int R = 4;
-int Q = 5;
-int K = 6;
-int p = 7;
-int n = 8;
-int b = 9;
-int r = 10;
-int q = 11;
-int k = 12;
-*/
-
 //White = 1, Black = 0
+
+void sendCommand(std::chrono::seconds delay)
+{
+    std::this_thread::sleep_for(delay);
+    stop = true;
+}
 
 int main()
 {
@@ -63,17 +54,6 @@ int main()
     std::chrono::time_point<std::chrono::system_clock> start, end;
     pieceMaps();
     initZobrist();
-    /*
-    char board[64] = {
-        'r','n','b','q','k','b','n','r',
-        'p','p','p','p','p','p','p','p',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        ' ',' ',' ',' ',' ',' ',' ',' ',
-        'P','P','P','P','P','P','P','P',
-        'R','N','B','Q','K','B','N','R'
-    };*/
     int board2[64];
     
     //Placeholder variables
@@ -119,8 +99,42 @@ int main()
             tokens.push_back(token);
         }
         if (tokens[0] == "go") {
+            float time;
+            stop = false;
+            bool setDepth = false;
             nodes = 0;
-            negamaxHelper(color, whiteBoards, blackBoards, miscBoards, 8, board2);
+            qNodes = 0;
+            if (tokens.size() > 1)
+            {
+                if (color == 0)
+                {
+                    time = std::stoi(tokens[4]);
+                }
+                else
+                {
+                    time = std::stoi(tokens[2]);;
+                }
+                int material = getMaterialCount(whiteBoards, blackBoards);
+                //Console.WriteLine(time);
+                time = time / estimatedHalfMoves(material);
+                if (time <= 0)
+                {
+                    time = 100;
+                }
+                time /= 1000;
+            }
+            else { //if time not specified
+                setDepth = true;
+            }
+            if (!setDepth) {
+                auto s1 = std::async(std::launch::async, sendCommand, std::chrono::seconds((int)time));
+                negamaxHelper(color, whiteBoards, blackBoards, miscBoards, board2, setDepth);
+            }
+            else {
+                negamaxHelper(color, whiteBoards, blackBoards, miscBoards, board2, setDepth);
+            }
+            
+            
             clearHashmap();
             clearKillers();
             clearHistory();
@@ -128,6 +142,8 @@ int main()
             repetition.clear();
         }
         else if (tokens[0] == "uci") {
+            std::cout << "id name " << "Astarion_V1" << std::endl;
+            std::cout << "id author " << "Cameron Mah" << std::endl;
             std::cout << "uciok" << std::endl;
         }
         else if (tokens[0] == "isready") {
@@ -221,14 +237,21 @@ int main()
             std::cout << idx;
         }
         else if (tokens[0] == "atk") {
+            int idx = 0;
+            int moves[256];
+            getCaptures(moves, idx, color, whiteBoards, blackBoards, miscBoards);
+            for (int i = 0; i < idx; i++) {
+                std::cout << "Source square: " << getMoveSource(moves[i]) << " End Square: " << getMoveTarget(moves[i]) << " Promotion: " << std::endl;
+            }
+            std::cout << "Total Attacks: " << idx << std::endl;
+        }
+        else if (tokens[0] == "atkTables") {
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 64; j++) {
                     printBitBoard(rookAttacks[j][i]);
                 }
                 std::cout << "---------------------------------------------" << std::endl;
             }
-        }
-        else if (tokens[0] == "atk2") {
             for (int i = 0; i < 64; i++) {
                 printBitBoard(pawnAttacksB[i]);
             }
@@ -310,5 +333,6 @@ int main()
         }
     }
 }
+
 
 

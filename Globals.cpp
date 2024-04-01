@@ -41,6 +41,11 @@ const int q = 11;
 const int k = 12;*/
 
 int nodes = 0;
+int qNodes = 0;
+int pvLength;
+bool stop = false;
+
+
 
 int killers[30][2];
 int history[12][64];
