@@ -1,0 +1,18 @@
+Testing versions
+
+Base features: (All versions will have these features, may specify implementation/change in implementation in version):
+- alpha/beta
+- TT table(will specify replacement scheme under version)
+- nmp(r value of 3)
+- basic move ordering(mvv lva, hash move, killer move, history heuristic)
+- classical bitboard move generation(will eventually switch to magic bbs)
+- 2 killer moves
+- history heuristic
+- threefold repetition
+- quiescent search with delta pruning
+
+
+Astarion_V1 features:
+- Base features
+- PeSTOs evaluation
+- Basic time controls, not considering increment

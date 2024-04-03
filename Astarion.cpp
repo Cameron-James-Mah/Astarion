@@ -42,9 +42,6 @@ void sendCommand(std::chrono::seconds delay)
 
 int main()
 {
-    
-    setvbuf(stdin, nullptr, _IONBF, 0);
-    setvbuf(stdout, nullptr, _IONBF, 0);
     struct test {
         std::string fen;
         unsigned long result;
@@ -52,8 +49,6 @@ int main()
         test(std::string fen, int result, int depth) :fen(fen), result(result), depth(depth) {}
     };
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    pieceMaps();
-    initZobrist();
     int board2[64];
     
     //Placeholder variables
@@ -86,10 +81,13 @@ int main()
 
     int color = 1;
     std::string input;
-
-    generateTables();
-    clearHashmap();
-    clearHistory();
+    pieceMaps(); 
+    initZobrist(); //zobrist table
+    generateTables(); //attack tables
+    initTables(); //pestos psq tables
+    clearHashmap(); //tt table
+    clearHistory(); //history table
+    clearKillers(); //killer moves table
     initHashmap(256);
     while (std::getline(std::cin, input)) { //uci loop
         std::stringstream inputSS(input);
@@ -257,25 +255,6 @@ int main()
             }
         }
         else if (tokens[0] == "test") {
-            /*
-            unsigned long lsb;
-            _BitScanReverse64(&lsb, 0b010000);
-            cout << lsb;*/
-            //cout << bitset<16>(0b010000);
-            //printBoard2(board2);
-            /*
-            unsigned long lsb;
-            _BitScanForward64(&lsb, whiteBoards[5]);
-            cout << isSquareAttacked(lsb, color, whiteBoards, blackBoards, miscBoards);*/
-            /*
-            cout << sizeof(whiteBoards) << endl; //56 
-            cout << sizeof(miscBoards) << endl; //32 
-            cout << sizeof(board2) << endl;
-            printBitBoard(notHGFile);
-            printBoard2(board2);*/
-            //printBitBoard(notHGFile);
-            //printBitBoard(blackBoards[1]&notHGFile);
-            //printBitBoard(bCastleRightsMask);
             std::vector<test> tests;
             bool passed = true;
             tests.push_back(test("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 4865609, 5));
@@ -314,13 +293,11 @@ int main()
             std::cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
         }
         else if (tokens[0] == "perft") { 
-            //if tokens[1] is null then no perft
             start = std::chrono::system_clock::now();
             std::cout << std::endl << "Nodes: " << perftHelper(color, whiteBoards, blackBoards, miscBoards, stoi(tokens[1]), board2);
             end = std::chrono::system_clock::now();
             std::chrono::duration<double> elapsed_seconds = end - start;
             std::cout << "\nElapsed time: " << elapsed_seconds.count() << "s\n";
-            //perft(color, whiteBoards, blackBoards, miscBoards, stoi(tokens[1]), board2);
         }
         else if (tokens[0] == "eval") {
             std::cout << evaluate(color, whiteBoards, blackBoards, miscBoards, board2);

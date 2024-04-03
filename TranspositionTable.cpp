@@ -33,7 +33,7 @@ void initHashmap(int mb) {
 	}
 	else {
 		clearHashmap();
-		std::cout << "Hashmap init with size: " << hashmapSize << std::endl;
+		//std::cout << "Hashmap init with size: " << hashmapSize << std::endl;
 	}
 }
 

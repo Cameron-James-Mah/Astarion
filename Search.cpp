@@ -103,10 +103,7 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	}*/
 	nodes++;
 	repetition[zobristKey]++;
-	if (repetition[zobristKey] == 3) { //threefold repetition
-		return 0;
-	}
-	if (stop) {
+	if (repetition[zobristKey] == 3 || stop) { //threefold repetition or stop search due to time
 		return 0;
 	}
 	Entry* temp = getEntry();
@@ -148,9 +145,6 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	}
 	else {
 		_BitScanForward64(&kingBit, blackBoards[5]);
-	}
-	if (whiteBoards[5] == 0 || blackBoards[5] == 0) {
-		printBoard2(board);
 	}
 	
 	uint64_t enPassant = miscBoards[2];
@@ -206,12 +200,6 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	}
 	if (!moved) { //no moves in pos
 		repetition[zobristKey]--;
-		if (color == 1) {
-			_BitScanForward64(&kingBit, whiteBoards[5]);
-		}
-		else {
-			_BitScanForward64(&kingBit, blackBoards[5]);
-		}
 		if (isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) { //checkmate
 			return - depth - mateVal;
 		}
