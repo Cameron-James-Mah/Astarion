@@ -7,7 +7,7 @@ void printBoard(char board[64]);
 void printBoard2(int board[64]);
 void resetBoard(int board[64], uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]);
 void updateFromFen(int board[64], std::string fen, uint64_t miscBoards[], int &color);
-void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBoards[4]);
+void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBoards[4], int color);
 void updateBitBoards(char board[64], uint64_t blackBoards[7], uint64_t whiteBoards[7], uint64_t miscBoards[4]);
 void updateBitBoards2(int board[64], uint64_t blackBoards[7], uint64_t whiteBoards[7], uint64_t miscBoards[4]);
 int getCellNumber(std::string cell);
@@ -23,3 +23,4 @@ void getCaptures(int moves[], int& idx, int color, uint64_t whiteBoards[], uint6
 int getMaterialCount(uint64_t whiteBoards[], uint64_t blackBoards[]);
 int getMaterialValueForTime(int piece);
 int estimatedHalfMoves(int material);
+void updateEnPassantHash(int source);

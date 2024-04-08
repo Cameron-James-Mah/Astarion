@@ -16,4 +16,6 @@ int scoreMove(int move, int board[], int hashMove, int depth);
 void printMoves(int idx, int moves[]);
 void quickSortMoves(int moves[], int moveScores[], int low, int high);
 void collectPv(std::vector<int>& pvList, int depth, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int color);
-int qSearch(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int depth, int board[], int alpha, int beta);
+int qSearch(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int board[], int alpha, int beta);
+void sortCaptures(int idx, int moves[], int board[]);
+int scoreCapture(int move, int board[]);

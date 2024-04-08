@@ -11,6 +11,8 @@
 #include "Globals.h"
 #include "Zobrist.h"
 #include "MoveGen.h"
+#include "Board.h"
+#include "AttackTables.h"
 
 
 void updateFromFen(int board[64], std::string fen, uint64_t miscBoards[], int& color);
@@ -183,11 +185,11 @@ void updateFromFen(int board[64], std::string fen, uint64_t miscBoards[], int &c
     memcpy(board, temp, sizeof(temp));
 }
 
-void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBoards[4]) {
+void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBoards[4], int color) {
     //special cases include: en passant, castling
     //otherwise just move piece to target location
     //miscBoards[3] = 0b10001001'00000000'00000000'00000000'00000000'00000000'00000000'10001001;
-    computeZobrist(board);
+    computeZobrist(board, color, miscBoards);
     repetition[zobristKey]++;
     for (int i = 0; i < moves.size(); i++) {
         miscBoards[2] = 0;
@@ -229,8 +231,10 @@ void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBo
             board[getCellNumber(to)] = board[getCellNumber(from)];
         }
         board[getCellNumber(from)] = 12;
-        computeZobrist(board);
+        zobristKey ^= blackHash;
+        computeZobrist(board, color, miscBoards);
         repetition[zobristKey]++;
+        
     }
 }
 
@@ -461,7 +465,6 @@ void updateMiscBoards(uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t
 }
 
 void makeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color, unsigned long& kingBit) {
-    zobristKey ^= colorHash;
     if (getMoveIsCapture(move)) {
         if (getMoveIsEnPassant(move)) {
             if (color == 1) {
@@ -491,6 +494,12 @@ void makeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoard
             miscBoards[2] ^= one << (dest - 8);
         }
         //printBitBoard(miscBoards[2]);
+        if (color == 1 && enPassantAttacks[dest] & blackBoards[0]) {
+            updateEnPassantHash(source);
+        }
+        else if (color == 0 && enPassantAttacks[dest] & whiteBoards[0]) {
+            updateEnPassantHash(source);
+        }
     }
     zobristKey ^= zobristTable[piece][source];
     board[source] = 12;
@@ -545,11 +554,11 @@ void makeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoard
     else {
         _BitScanForward64(&kingBit, blackBoards[5]);
     }
+    zobristKey ^= blackHash;
     updateMiscBoards(whiteBoards, blackBoards, miscBoards);
 }
 
 void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color, uint64_t castleRights) {
-    zobristKey ^= colorHash;
     zobristKey ^= zobristTable[piece][source];
     board[source] = piece;
     addBitBoardPiece(piece, source, whiteBoards, blackBoards, miscBoards);
@@ -602,8 +611,18 @@ void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoa
             miscBoards[3] ^= one << (source - 4);
         }
     }
+    if (getMoveIsDoublePush(move)) {
+        if (color == 1 && enPassantAttacks[dest] & blackBoards[0]) {
+            updateEnPassantHash(source);
+        }
+        else if (color == 0 && enPassantAttacks[dest] & whiteBoards[0]) {
+            updateEnPassantHash(source);
+        }
+        
+    }
     miscBoards[3] = castleRights;
     updateMiscBoards(whiteBoards, blackBoards, miscBoards);
+    zobristKey ^= blackHash;
 }
 
 void getMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[]) {
@@ -689,6 +708,59 @@ int getMaterialValueForTime(int piece) {
     }
 }
 
+void updateEnPassantHash(int source) {
+    switch (source) {
+    case 48: case 8:
+        zobristKey ^= enPassantHash[0];
+        break;
+    case 49: case 9:
+        zobristKey ^= enPassantHash[1];
+        break;
+    case 50: case 10:
+        zobristKey ^= enPassantHash[2];
+        break;
+    case 51: case 11:
+        zobristKey ^= enPassantHash[3];
+        break;
+    case 52: case 12:
+        zobristKey ^= enPassantHash[4];
+        break;
+    case 53: case 13:
+        zobristKey ^= enPassantHash[5];
+        break;
+    case 54: case 14:
+        zobristKey ^= enPassantHash[6];
+        break;
+    case 55: case 15:
+        zobristKey ^= enPassantHash[7];
+        break;
+    }
+    /*
+    if (miscBoards[2] & AFile) {
+        zobristKey ^= enPassantHash[0];
+    }
+    else if (miscBoards[2] & BFile) {
+        zobristKey ^= enPassantHash[1];
+    }
+    else if (miscBoards[2] & CFile) {
+        zobristKey ^= enPassantHash[2];
+    }
+    else if (miscBoards[2] & DFile) {
+        zobristKey ^= enPassantHash[3];
+    }
+    else if (miscBoards[2] & EFile) {
+        zobristKey ^= enPassantHash[4];
+    }
+    else if (miscBoards[2] & FFile) {
+        zobristKey ^= enPassantHash[5];
+    }
+    else if (miscBoards[2] & GFile) {
+        zobristKey ^= enPassantHash[6];
+    }
+    else if (miscBoards[2] & HFile) {
+        zobristKey ^= enPassantHash[7];
+    }*/
+}
 
 
 

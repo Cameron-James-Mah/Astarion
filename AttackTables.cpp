@@ -18,6 +18,8 @@ uint64_t bishopAttacks[64][4];
 uint64_t rookAttacks[64][4];
 uint64_t kingAttacks[64];
 
+uint64_t enPassantAttacks[64];
+
 /*
 uint64_t notAFile = 0b01111111'01111111'01111111'01111111'01111111'01111111'01111111'01111111;
 uint64_t notABFile = 0b00111111'00111111'00111111'00111111'00111111'00111111'00111111'00111111;
@@ -33,11 +35,31 @@ void generateTables() {
     generateBishopAttacks();
     generateRookAttacks();
     generateKingAttacks();
+    generateEnPassantAttacks();
 }
 
 void setBit(uint64_t& b, int source) {
 	uint64_t temp = 1;
 	b |= temp << source;
+}
+
+void generateEnPassantAttacks() {
+    for (int i = 0; i < 64; i++) {
+        uint64_t attacks = 0;
+        uint64_t bitboard = 0;
+        setBit(bitboard, i);
+        //east capture
+        if (((bitboard >> 1) & notHFile) > 0)
+        {
+            attacks |= bitboard >> 1;
+        }
+        //west capture
+        if (((bitboard << 1) & notAFile) > 0)
+        {
+            attacks |= bitboard << 1;
+        }
+        enPassantAttacks[i] = attacks;
+    }
 }
 
 void generatePawnAttacksW() {
