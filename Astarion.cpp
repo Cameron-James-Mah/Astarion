@@ -148,15 +148,17 @@ int main()
             std::cout << "readyok" << std::endl;
         }
         else if (tokens[0] == "position") {
+            repetition.clear();
             resetBoard(board2, whiteBoards, blackBoards, miscBoards);
             if (tokens[1] == "fen") {
                 std::string wholeFen = tokens[2] + " " + tokens[3] + " " + tokens[4];
                 updateFromFen(board2, wholeFen, miscBoards, color);
+                computeZobrist(board2, color, miscBoards);
                 auto it = find(tokens.begin(), tokens.end(), "moves");
                 if (it != tokens.end()) {
                     _int64 index = it - tokens.begin();
                     std::vector<std::string> moves(tokens.begin() + index, tokens.end());
-                    updateBoard(board2, moves, miscBoards);
+                    updateBoard(board2, moves, miscBoards, color);
                     if ((tokens.size()-index) % 2 == 0) {
                         color ^= 1;
                     }
@@ -171,7 +173,7 @@ int main()
                 else {
                     //remember to account for repetition, castlerights
                     std::vector<std::string> moves(tokens.begin() + 3, tokens.end());
-                    updateBoard(board2, moves, miscBoards);
+                    updateBoard(board2, moves, miscBoards, 1);
                     if (tokens.size() % 2 == 0) {
                         color = 0;
                     }
@@ -185,7 +187,7 @@ int main()
             for (int i = 0; i < 64; i++) {
                 board2[i] = pieceToVal[board[i]];
             }*/
-            computeZobrist(board2);
+            
         }
         else if (tokens[0] == "p") {
             printBoard2(board2);
@@ -210,7 +212,7 @@ int main()
         else if (tokens[0] == "attacks") {
             for (int i = 0; i < 64; i++) {
                 std::cout << "Source: " << i << std::endl;
-                printBitBoard(pawnAttacksB[i]);
+                printBitBoard(enPassantAttacks[i]);
             }
             /*
             for (int i = 0; i < 64; i++) {

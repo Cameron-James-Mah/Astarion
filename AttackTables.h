@@ -12,6 +12,7 @@ extern uint64_t knightAttacks[64];
 extern uint64_t bishopAttacks[64][4];
 extern uint64_t rookAttacks[64][4];
 extern uint64_t kingAttacks[64];
+extern uint64_t enPassantAttacks[64];
 
 void generateTables();
 
@@ -21,6 +22,7 @@ void generateKnightAttacks();
 void generateBishopAttacks();
 void generateRookAttacks();
 void generateKingAttacks();
+void generateEnPassantAttacks();
 
 void setBit(uint64_t& b, int source);
 

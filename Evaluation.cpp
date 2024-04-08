@@ -166,8 +166,8 @@ void initTables() {
         for (int j = 0; j < 64; j++) {
             mg_table[i][j] = mg_value[i] + mg_pesto_table[i][j];
             eg_table[i][j] = eg_value[i] + eg_pesto_table[i][j];
-            mg_table[i+6][j] = mg_value[i] + mg_pesto_table[i][(j^56)]; //xor flips square across middle of board vertically, 63^56 = 7, 7^56 = 63, etc
-            eg_table[i+6][j] = eg_value[i] + eg_pesto_table[i][(j^56)];
+            mg_table[i + 6][j] = mg_value[i] + mg_pesto_table[i][(j ^ 56)]; //xor flips square across middle of board vertically, 63^56 = 7, 7^56 = 63, etc
+            eg_table[i + 6][j] = eg_value[i] + eg_pesto_table[i][(j ^ 56)];
         }
     }
 }
@@ -212,7 +212,7 @@ int evaluate(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t
         egScore = egBlack - egWhite;
     }
     int mgPhase = gamephase;
-    if (mgPhase > 24) mgPhase = 24; 
+    if (mgPhase > 24) mgPhase = 24;
     int egPhase = 24 - mgPhase;
     return (mgScore * mgPhase + egScore * egPhase) / 24;
 }
