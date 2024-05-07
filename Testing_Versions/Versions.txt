@@ -2,7 +2,7 @@ Testing versions
 
 Base features: (All versions will have these features, may specify implementation/change in implementation in version):
 - alpha/beta
-- TT table(will specify replacement scheme under version)
+- TT table(will specify replacement scheme under version if changed, otherwise replace if newer iteration and replace when deeper ply)
 - nmp(r value of 3)
 - basic move ordering(mvv lva, hash move, killer move, history heuristic)
 - classical bitboard move generation(will eventually switch to magic bbs)
@@ -16,3 +16,18 @@ Astarion_V1 features:
 - Base features
 - PeSTOs evaluation
 - Basic time controls, not considering increment
+
+V2:
+nmp r value changed to 4
+check extensions(if depth 0)
+fixed zobrist hashing bug
+fixed 3 move repetition bug
+big improvement
+
+V2.1:
+move ordering tweak, killer moves before bad captures
+delta pruning now off
+
+V2.2:
+fixed mate bug
+killer moves/history only updating on quiet moves now

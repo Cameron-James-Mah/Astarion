@@ -51,7 +51,6 @@ const int k = 12;*/
 
 int nodes = 0;
 int qNodes = 0;
-int pvLength;
 bool stop = false;
 
 

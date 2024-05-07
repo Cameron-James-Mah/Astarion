@@ -1,6 +1,6 @@
 #include <cstdint>
 
-const int hashFlagExact = 0;
+const int hashFlagExact = 3;
 const int hashFlagAlpha = 1;
 const int hashFlagBeta = 2;
 
@@ -18,6 +18,8 @@ struct Entry {
 	int bestMove;
 	uint8_t age;
 };
+
+
 
 extern int hashmapSize;
 extern Entry* hashmap;

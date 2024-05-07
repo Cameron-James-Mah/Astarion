@@ -22,7 +22,7 @@ void clearHashmap() {
 
 void initHashmap(int mb) {
 	int size = 0x100000 * mb;
-	hashmapSize = size / sizeof(Entry);
+	hashmapSize = size / (sizeof(Entry));
 	if (hashmap != nullptr) {
 		delete[] hashmap;
 	}

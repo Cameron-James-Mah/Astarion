@@ -20,6 +20,8 @@ uint64_t kingAttacks[64];
 
 uint64_t enPassantAttacks[64];
 
+uint64_t allRays[64][8];
+
 /*
 uint64_t notAFile = 0b01111111'01111111'01111111'01111111'01111111'01111111'01111111'01111111;
 uint64_t notABFile = 0b00111111'00111111'00111111'00111111'00111111'00111111'00111111'00111111;
@@ -36,6 +38,26 @@ void generateTables() {
     generateRookAttacks();
     generateKingAttacks();
     generateEnPassantAttacks();
+    /*
+    uint64_t SWmoves = bishopAttacks[lsb][3];
+    uint64_t SEmoves = bishopAttacks[lsb][2];
+    uint64_t NWmoves = bishopAttacks[lsb][1];
+    uint64_t NEmoves = bishopAttacks[lsb][0];
+    uint64_t Smoves = rookAttacks[lsb][3];
+    uint64_t Emoves = rookAttacks[lsb][2];
+    uint64_t Wmoves = rookAttacks[lsb][1];
+    uint64_t Nmoves = rookAttacks[lsb][0];*/
+    for (int i = 0; i < 64; i++) {
+        allRays[i][5] = bishopAttacks[i][3];
+        allRays[i][3] = bishopAttacks[i][2];
+        allRays[i][7] = bishopAttacks[i][1];
+        allRays[i][1] = bishopAttacks[i][0];
+
+        allRays[i][4] = rookAttacks[i][3];
+        allRays[i][2] = rookAttacks[i][2];
+        allRays[i][6] = rookAttacks[i][1];
+        allRays[i][0] = rookAttacks[i][0];
+    }
 }
 
 void setBit(uint64_t& b, int source) {
@@ -159,6 +181,7 @@ void generateBishopAttacks() {
             offset += 7;
         }
         bishopAttacks[i][0] = attacks;
+        allRays[i][1] = attacks;
         attacks = 0;
         //NW ray
         offset = 9;
@@ -170,6 +193,7 @@ void generateBishopAttacks() {
             offset += 9;
         }
         bishopAttacks[i][1] = attacks;
+        allRays[i][7] = attacks;
         attacks = 0;
         //SE ray
         offset = 9;
@@ -181,6 +205,7 @@ void generateBishopAttacks() {
             offset += 9;
         }
         bishopAttacks[i][2] = attacks;
+        allRays[i][3] = attacks;
         attacks = 0;
         //SW ray
         offset = 7;
@@ -192,6 +217,7 @@ void generateBishopAttacks() {
             offset += 7;
         }
         bishopAttacks[i][3] = attacks;
+        allRays[i][5] = attacks;
     }
 }
 
@@ -211,6 +237,7 @@ void generateRookAttacks()
             offset += 8;
         }
         rookAttacks[i][0] = attacks;
+        allRays[i][0] = attacks;
         attacks = 0;
         //West ray
         offset = 1;
@@ -222,6 +249,7 @@ void generateRookAttacks()
             offset += 1;
         }
         rookAttacks[i][1] = attacks;
+        allRays[i][6] = attacks;
         attacks = 0;
         //East ray
         offset = 1;
@@ -233,6 +261,7 @@ void generateRookAttacks()
             offset += 1;
         }
         rookAttacks[i][2] = attacks;
+        allRays[i][2] = attacks;
         attacks = 0;
         //South ray
         offset = 8;
@@ -244,6 +273,7 @@ void generateRookAttacks()
             offset += 8;
         }
         rookAttacks[i][3] = attacks;
+        allRays[i][4] = attacks;
     }
 }
 

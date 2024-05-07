@@ -30,7 +30,7 @@ uint64_t perftHelper(int color, uint64_t whiteBoards[], uint64_t blackBoards[], 
 			currNodes = perft(newColor, whiteBoards, blackBoards, miscBoards, depth-1, board);
 			std::cout << notation[getMoveSource(moves[i])] << notation[getMoveTarget(moves[i])] << ": "  << currNodes << std::endl;
 		}
-		unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
+		unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights, kingBit);
 		nodes += currNodes;
 	}
 	/*
@@ -67,7 +67,7 @@ uint64_t perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64
 			//cout << "Source square: " << notation[getMoveSource(moves[i])] << " End Square: " << notation[getMoveTarget(moves[i])] << " Promotion: " << getMoveIsPromotion(moves[i]) << endl;
 			nodes += perft(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board);
 		}
-		unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights);
+		unMakeMove(moves[i], board, whiteBoards, blackBoards, miscBoards, capturedPiece, source, dest, piece, color, castleRights, kingBit);
 	}
 	miscBoards[2] = 0;
 	return nodes;
@@ -76,7 +76,7 @@ uint64_t perft(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64
 void printBBs(uint64_t bb[]) {
 	int col = 0;
 	uint64_t temp = 1;
-	for (int k = 0; k < 6; k++) {
+	for (int k = 0; k < 7; k++) {
 		for (int i = 0; i < 64; i++) {
 			if (((temp << i) & bb[k]) > 0) {
 				std::cout << "1 ";
