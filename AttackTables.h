@@ -14,6 +14,8 @@ extern uint64_t rookAttacks[64][4];
 extern uint64_t kingAttacks[64];
 extern uint64_t enPassantAttacks[64];
 
+extern uint64_t allRays[64][8];
+
 void generateTables();
 
 void generatePawnAttacksW();

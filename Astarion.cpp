@@ -34,7 +34,7 @@
 
 //White = 1, Black = 0
 
-void sendCommand(std::chrono::seconds delay)
+void sendCommand(std::chrono::milliseconds delay)
 {
     std::this_thread::sleep_for(delay);
     stop = true;
@@ -97,7 +97,7 @@ int main()
             tokens.push_back(token);
         }
         if (tokens[0] == "go") {
-            float time;
+            int time;
             stop = false;
             bool setDepth = false;
             nodes = 0;
@@ -119,13 +119,13 @@ int main()
                 {
                     time = 100;
                 }
-                time /= 1000;
+                time;
             }
             else { //if time not specified
                 setDepth = true;
             }
             if (!setDepth) {
-                auto s1 = std::async(std::launch::async, sendCommand, std::chrono::seconds((int)time));
+                auto s1 = std::async(std::launch::async, sendCommand, std::chrono::milliseconds(time));
                 negamaxHelper(color, whiteBoards, blackBoards, miscBoards, board2, setDepth);
             }
             else {
@@ -181,6 +181,7 @@ int main()
                         color = 1;
                     }
                 }
+                computeZobrist(board2, color, miscBoards);
             }
             updateBitBoards2(board2, blackBoards, whiteBoards, miscBoards);
             /*
@@ -231,7 +232,7 @@ int main()
             getRookAndQueenMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
             getKingMoves(moves, idx, color, whiteBoards, blackBoards, miscBoards);
             for (int i = 0; i < idx; i++) {
-                std::cout << "Source square: " << getMoveSource(moves[i]) << " End Square: " << getMoveTarget(moves[i]) << " Promotion: " << getMoveIsPromotion(moves[i]) << getMoveIsCapture(moves[i]) << " | " << getMoveIsCastling(moves[i]) << " | " << getMoveIsDoublePush(moves[i]) << " | " << getMoveIsEnPassant(moves[i]) << " | " << std::endl;
+                std::cout << notation[getMoveSource(moves[i])] << notation[getMoveTarget(moves[i])] << " Promotion: " << getMoveIsPromotion(moves[i]) << getMoveIsCapture(moves[i]) << " | " << getMoveIsCastling(moves[i]) << " | " << getMoveIsDoublePush(moves[i]) << " | " << getMoveIsEnPassant(moves[i]) << " | " << std::endl;
                 //cout << bitset<26>(moves[i]) << endl << bitset<26>(getMoveIsPromotion(moves[i])) << endl << endl;
             }
             std::cout << idx;
@@ -248,7 +249,7 @@ int main()
         else if (tokens[0] == "atkTables") {
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 64; j++) {
-                    printBitBoard(rookAttacks[j][i]);
+                    printBitBoard(bishopAttacks[j][i]);
                 }
                 std::cout << "---------------------------------------------" << std::endl;
             }
@@ -306,6 +307,14 @@ int main()
         }
         else if (tokens[0] == "hash") {
             std::cout << "Hash: " << zobristKey << std::endl;
+        }
+        else if (tokens[0] == "see") {
+            int src = stoi(tokens[1]);
+            int piece = board2[src];
+            int dest = stoi(tokens[2]);
+            //std::cout << "SEE: " << SEE(stoi(tokens[1]), whiteBoards, blackBoards, miscBoards, board2, parseMove(60, 28, R, 0, 1, 0, 0, 0), color); //position 1 in cpw SEE https://www.chessprogramming.org/SEE_-_The_Swap_Algorithm
+            //std::cout << "SEE: " << SEE(stoi(tokens[1]), whiteBoards, blackBoards, miscBoards, board2, parseMove(43, 28, N, 0, 1, 0, 0, 0), color); //position 2 
+            std::cout << "SEE: " << SEE(dest, whiteBoards, blackBoards, miscBoards, board2, parseMove(src, dest, piece, 0, 1, 0, 0, 0), color, 0);
         }
         else {
             std::cout << "Unknown Command" << std::endl;

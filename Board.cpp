@@ -186,9 +186,6 @@ void updateFromFen(int board[64], std::string fen, uint64_t miscBoards[], int &c
 }
 
 void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBoards[4], int color) {
-    //special cases include: en passant, castling
-    //otherwise just move piece to target location
-    //miscBoards[3] = 0b10001001'00000000'00000000'00000000'00000000'00000000'00000000'10001001;
     computeZobrist(board, color, miscBoards);
     repetition[zobristKey]++;
     for (int i = 0; i < moves.size(); i++) {
@@ -222,10 +219,7 @@ void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBo
             miscBoards[3] ^= one << (getCellNumber(from));
         }
         if (board[getCellNumber(from)] == p && getCellNumber(to) >= 56 || board[getCellNumber(from)] == P && getCellNumber(to) <= 7) { //promotion
-            if (board[getCellNumber(from)] == P) {
-                board[getCellNumber(to)] = pieceToVal[toupper(moves[i][4])]; //wtf did i have before?
-            }
-            //board[getCellNumber(to)] = moves[i][4];
+            board[getCellNumber(to)] = pieceToVal[moves[i][4]];
         }
         else {
             board[getCellNumber(to)] = board[getCellNumber(from)];
@@ -558,7 +552,7 @@ void makeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoard
     updateMiscBoards(whiteBoards, blackBoards, miscBoards);
 }
 
-void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color, uint64_t castleRights) {
+void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color, uint64_t castleRights, unsigned long &kingBit) {
     zobristKey ^= zobristTable[piece][source];
     board[source] = piece;
     addBitBoardPiece(piece, source, whiteBoards, blackBoards, miscBoards);
@@ -623,6 +617,73 @@ void unMakeMove(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoa
     miscBoards[3] = castleRights;
     updateMiscBoards(whiteBoards, blackBoards, miscBoards);
     zobristKey ^= blackHash;
+    if (color == 1) {
+        _BitScanForward64(&kingBit, whiteBoards[5]);
+    }
+    else {
+        _BitScanForward64(&kingBit, blackBoards[5]);
+    }
+}
+
+void makeCapture(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color, unsigned long& kingBit) {
+    if (getMoveIsEnPassant(move)) {
+        if (color == 1) {
+            capturedPiece = p;
+            removeBitBoardPiece(board[dest + 8], dest + 8, whiteBoards, blackBoards, miscBoards);
+            board[dest + 8] = 12;
+        }
+        else {
+            capturedPiece = P;
+            removeBitBoardPiece(board[dest - 8], dest - 8, whiteBoards, blackBoards, miscBoards);
+            board[dest - 8] = 12;
+        }
+    }
+    else {
+        capturedPiece = board[dest];
+        removeBitBoardPiece(capturedPiece, dest, whiteBoards, blackBoards, miscBoards);
+    }
+    board[source] = 12;
+    removeBitBoardPiece(piece, source, whiteBoards, blackBoards, miscBoards);
+    if (getMoveIsPromotion(move)) {
+        board[dest] = getMoveIsPromotion(move);
+        addBitBoardPiece(getMoveIsPromotion(move), dest, whiteBoards, blackBoards, miscBoards);
+    }
+    else {
+        board[dest] = piece;
+        addBitBoardPiece(piece, dest, whiteBoards, blackBoards, miscBoards);
+    }
+    if (color == 1) {
+        _BitScanForward64(&kingBit, whiteBoards[5]);
+    }
+    else {
+        _BitScanForward64(&kingBit, blackBoards[5]);
+    }
+    updateMiscBoards(whiteBoards, blackBoards, miscBoards);
+}
+void unMakeCapture(int move, int board[], uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int& capturedPiece, int& source, int& dest, int& piece, int color) {
+    board[source] = piece;
+    addBitBoardPiece(piece, source, whiteBoards, blackBoards, miscBoards);
+    if (getMoveIsPromotion(move)) {
+        removeBitBoardPiece(getMoveIsPromotion(move), dest, whiteBoards, blackBoards, miscBoards);
+    }
+    else {
+        removeBitBoardPiece(piece, dest, whiteBoards, blackBoards, miscBoards);
+    }
+    if (getMoveIsEnPassant(move)) {
+        if (color == 1) {
+            board[dest + 8] = capturedPiece;
+            addBitBoardPiece(capturedPiece, dest + 8, whiteBoards, blackBoards, miscBoards);
+        }
+        else {
+            board[dest - 8] = capturedPiece;
+            addBitBoardPiece(capturedPiece, dest - 8, whiteBoards, blackBoards, miscBoards);
+        }
+    }
+    else {
+        board[dest] = capturedPiece;
+        addBitBoardPiece(capturedPiece, dest, whiteBoards, blackBoards, miscBoards);
+    }
+    updateMiscBoards(whiteBoards, blackBoards, miscBoards);
 }
 
 void getMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[]) {

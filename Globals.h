@@ -37,7 +37,6 @@ extern uint64_t HFile;
 
 extern int nodes;
 extern int qNodes;
-extern int pvLength;
 
 extern int killers[30][2];
 extern int history[12][64];
@@ -45,7 +44,8 @@ extern int history[12][64];
 const int infinity = 100000;
 const int mateVal = 200000;
 
-const int rValue = 3;
+const int rValueNull = 3;
+const int rValueLate = 3;
 
 extern bool stop;
 const int defaultDepth = 8;
@@ -84,7 +84,7 @@ const uint64_t bCastleRightsMask = 0b00000000'00000000'00000000'00000000'0000000
 extern std::unordered_map<int, char> valToPiece;
 extern std::unordered_map<char, int> pieceToVal;
 
-const int pieceValues[12] = { 82, 337, 365, 477, 1025,  0, 82, 337, 365, 477, 1025,  0 };
+const int pieceValues[12] = { 82, 337, 365, 477, 1025,  1200, 82, 337, 365, 477, 1025,  1200 };
 
 extern std::unordered_map<uint64_t, int> repetition;
 

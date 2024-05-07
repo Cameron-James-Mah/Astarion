@@ -271,8 +271,8 @@ void computeZobrist(int board[], int color, uint64_t miscBoards[]) {
     if (miscBoards[3] & one << 63) {
         zobristKey ^= castleHash[0];
     }
+    //std::cout << zobristKey;
     
-    /*
     if (miscBoards[2] & AFile) {
         zobristKey ^= enPassantHash[0];
     }
@@ -296,6 +296,6 @@ void computeZobrist(int board[], int color, uint64_t miscBoards[]) {
     }
     else if (miscBoards[2] & HFile) {
         zobristKey ^= enPassantHash[7];
-    }*/
+    }
 }
 
