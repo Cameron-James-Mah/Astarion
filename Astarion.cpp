@@ -124,6 +124,7 @@ int main()
             else { //if time not specified
                 setDepth = true;
             }
+            //time = 1000; setDepth = false; //just for testing purposes
             if (!setDepth) {
                 auto s1 = std::async(std::launch::async, sendCommand, std::chrono::milliseconds(time));
                 negamaxHelper(color, whiteBoards, blackBoards, miscBoards, board2, setDepth);

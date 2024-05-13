@@ -125,6 +125,7 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	nodes++;
 	repetition[zobristKey]++;
 	if (repetition[zobristKey] == 3 || stop) { //threefold repetition or stop search due to time
+		repetition[zobristKey]--;
 		return 0;
 	}
 	Entry* temp = getEntry();
@@ -148,15 +149,12 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 		hashMove = temp->bestMove;
 	}
 	unsigned long kingBit;
-	unsigned long kingBit2;
 	int newColor = color ^ 1;
 	if (color == 1) {
 		_BitScanForward64(&kingBit, whiteBoards[5]);
-		_BitScanForward64(&kingBit2, blackBoards[5]);
 	}
 	else {
 		_BitScanForward64(&kingBit, blackBoards[5]);
-		_BitScanForward64(&kingBit2, whiteBoards[5]);
 	}
 	if (depth == 0) {
 		if(isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
@@ -176,10 +174,32 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	}
 	
 	
+	
+	int enoughMaterial = 0; 
+	if (color == 1) {
+		for (int i = 1; i < 5; i++) {
+			std::bitset<64> b(whiteBoards[i]);
+			enoughMaterial += b.count();
+			if (enoughMaterial > 1) {
+				break;
+			}
+		}
+	}
+	else {
+		for (int i = 1; i < 5; i++) {
+			std::bitset<64> b(blackBoards[i]);
+			enoughMaterial += b.count();
+			if (enoughMaterial > 1) {
+				break;
+			}
+		}
+	}
+	
+	
 	uint64_t enPassant = miscBoards[2];
-	if (tryNull == 1 && depth >= 4 && !isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards) && !isSquareAttacked(kingBit2, newColor, whiteBoards, blackBoards, miscBoards)) { //null move, make sure to also check if no pieces
+	if (tryNull == 1 && depth >= 4 && !isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards) && enoughMaterial > 1) { //null move, make sure to also check if no pieces
 		miscBoards[2] = 0;
-		int score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 4, board, -beta, -beta+1, 0, ply+1);
+		int score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 4, board, -beta, -beta+1, 0, ply+4);
 		miscBoards[2] = enPassant;
 		if (score >= beta) {
 			repetition[zobristKey]--;
@@ -197,6 +217,7 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 	int bestMove = -1;
 	int moved = 0;
 	int moves_searched = 0;
+	bool isPV = false;
 	for (int i = 0; i < idx; i++) {
 		miscBoards[2] = 0;
 		int source = getMoveSource(moves[i]);
@@ -207,11 +228,11 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 		if (!isSquareAttacked(kingBit, color, whiteBoards, blackBoards, miscBoards)) {
 			moved = 1;
 			enPassant = miscBoards[2];
-			score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, -beta, -alpha, 1, ply+1);
-			/*
+			//score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, -beta, -alpha, 1, ply + 1);
+			
 			//LMR
-			if (moves_searched < 2) {
-				score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, -beta, -alpha, 1, ply+1);
+			if (moves_searched < 3 || isPV) {
+				score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, -beta, -alpha, 0, ply+1);
 			}
 			else {
 				unsigned long kingBit2;
@@ -222,7 +243,7 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 					_BitScanForward64(&kingBit2, blackBoards[5]);
 				}
 				if (moves_searched >= 4 && depth >= 3 && getMoveIsCapture(moves[i]) == 0 && getMoveIsPromotion(moves[i]) == 0 && !isSquareAttacked(kingBit2, newColor, whiteBoards, blackBoards, miscBoards)) {
-					score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 2, board, -(alpha+1), -alpha, 0, ply+1);
+					score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 2, board, -(alpha+1), -alpha, 1, ply+2);
 					miscBoards[2] = enPassant;
 				}
 				else {
@@ -233,9 +254,10 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 					miscBoards[2] = enPassant;
 					if (score > alpha && score < beta) { 
 						score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, -beta, -alpha, 0, ply + 1);
+						miscBoards[2] = enPassant;
 					}
 				}
-			}*/
+			}
 			/*
 			if (pvLength != -1 && pvList[ply] == moves[i]) {
 				score = -negamax(newColor, whiteBoards, blackBoards, miscBoards, depth - 1, board, -beta, -alpha, 0, ply+1);
@@ -264,6 +286,7 @@ int negamax(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t 
 				bestMove = moves[i];
 				hashF = hashFlagExact;
 				alpha = score;
+				isPV = true;
 			}
 			moves_searched++;
 		}
