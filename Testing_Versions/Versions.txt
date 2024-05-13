@@ -18,16 +18,28 @@ Astarion_V1 features:
 - Basic time controls, not considering increment
 
 V2:
-nmp r value changed to 4
-check extensions(if depth 0)
-fixed zobrist hashing bug
-fixed 3 move repetition bug
-big improvement
+- nmp r value changed to 4
+- check extensions(if depth 0)
+- fixed zobrist hashing bug
+- fixed 3 move repetition bug
+- big improvement
 
 V2.1:
-move ordering tweak, killer moves before bad captures
-delta pruning now off
+- move ordering tweak, killer moves before bad captures
+- delta pruning now off
 
 V2.2:
-fixed mate bug
-killer moves/history only updating on quiet moves now
+- fixed mate bug
+- killer moves/history only updating on quiet moves now
+- promotion bug fix
+
+V3:
+- Static exchange evaluation(SEE)
+- In normal search SEE only evaluates "losing" captures, "losing" captures with positive/equal SEE get sorted after winning/equal MVVLVA captures, "losing" captures with negative SEE get sorted to the end of the list.
+- In qSearch SEE only evaluates "losing" captures, "losing captures" with negative SEE are pruned completely.
+- From a small amount of testing, it seems my engine would be a little over 1700 on CCRL blitz 
+
+V4:
+- LMR(reducing after 3 moves, not reducing pv nodes/when depth below 3, captures, promotions, checks)
+- Bug fixes(fixed bug parsing positions with promotion moves, threefold repetition bug)
+- From a small amount of testing, engine seems to be about ~1820 ccrl blitz

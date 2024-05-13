@@ -218,8 +218,11 @@ void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBo
             board[getCellNumber(to) - 2] = 12;
             miscBoards[3] ^= one << (getCellNumber(from));
         }
-        if (board[getCellNumber(from)] == p && getCellNumber(to) >= 56 || board[getCellNumber(from)] == P && getCellNumber(to) <= 7) { //promotion
+        if (board[getCellNumber(from)] == p && getCellNumber(to) >= 56) { //promotion
             board[getCellNumber(to)] = pieceToVal[moves[i][4]];
+        }
+        else if (board[getCellNumber(from)] == P && getCellNumber(to) <= 7) {
+            board[getCellNumber(to)] = pieceToVal[moves[i][4]]-6;
         }
         else {
             board[getCellNumber(to)] = board[getCellNumber(from)];
