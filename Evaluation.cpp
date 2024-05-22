@@ -2,8 +2,8 @@
 #include "Globals.h"
 
 //Piece and PSQ tables from PeSTO's evaluation function https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
-const int mg_value[12] = { 82, 337, 365, 477, 1025,  0, 82, 337, 365, 477, 1025,  0 };
-const int eg_value[12] = { 94, 281, 297, 512,  936,  0, 94, 281, 297, 512,  936,  0 };
+const int mg_value[12] = { 82, 337, 365, 477, 1025,  10000, 82, 337, 365, 477, 1025,  10000 };
+const int eg_value[12] = { 94, 281, 297, 512,  936,  10000, 94, 281, 297, 512,  936,  10000 };
 
 int mg_pawn_table[64] = {
       0,   0,   0,   0,   0,   0,  0,   0,
@@ -176,31 +176,24 @@ void initTables() {
 int evaluate(int color, uint64_t whiteBoards[], uint64_t blackBoards[], uint64_t miscBoards[], int board[]) {
     int mgWhite = 0; int egWhite = 0; int mgBlack = 0; int egBlack = 0;
     int gamephase = 0;
-    int currPiece = 0;
     for (int i = 0; i < 6; i++) {
         uint64_t bitboard = whiteBoards[i];
+        uint64_t bitboard2 = blackBoards[i];
         unsigned long lsb;
         while (bitboard) {
             _BitScanReverse64(&lsb, bitboard);
-            mgWhite += mg_table[currPiece][lsb];
-            egWhite += eg_table[currPiece][lsb];
-            gamephase += gamephaseInc[currPiece];
+            mgWhite += mg_table[i][lsb];
+            egWhite += eg_table[i][lsb];
+            gamephase += gamephaseInc[i];
             bitboard ^= one << lsb;
         }
-        currPiece++;
-    }
-
-    for (int i = 0; i < 6; i++) {
-        uint64_t bitboard = blackBoards[i];
-        unsigned long lsb;
-        while (bitboard) {
-            _BitScanReverse64(&lsb, bitboard);
-            mgBlack += mg_table[currPiece][lsb];
-            egBlack += eg_table[currPiece][lsb];
-            gamephase += gamephaseInc[currPiece];
-            bitboard ^= one << lsb;
+        while (bitboard2) {
+            _BitScanReverse64(&lsb, bitboard2);
+            mgBlack += mg_table[i+6][lsb];
+            egBlack += eg_table[i+6][lsb];
+            gamephase += gamephaseInc[i+6];
+            bitboard2 ^= one << lsb;
         }
-        currPiece++;
     }
     int mgScore; int egScore;
     if (color == 1) {

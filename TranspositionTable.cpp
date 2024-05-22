@@ -67,11 +67,11 @@ void recordEntry(int depth, int val, int hashFlag, int bestMove) {
 	}*/
 	if (currAge > newEntry->age || newEntry->depth <= depth) {
 		newEntry->key = zobristKey;
-		newEntry->depth = depth;
-		newEntry->flag = hashFlag;
+		newEntry->depth = (uint8_t)depth;
+		newEntry->flag = (uint8_t)hashFlag;
 		newEntry->value = val;
 		newEntry->bestMove = bestMove;
-		newEntry->age = currAge;
+		newEntry->age = (uint8_t)currAge;
 	}
 }
 

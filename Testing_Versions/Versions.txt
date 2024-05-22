@@ -43,3 +43,6 @@ V4:
 - LMR(reducing after 3 moves, not reducing pv nodes/when depth below 3, captures, promotions, checks)
 - Bug fixes(fixed bug parsing positions with promotion moves, threefold repetition bug)
 - From a small amount of testing, engine seems to be about ~1820 ccrl blitz
+
+V5: 
+- More bug fixes(fixed promotion bug again, fixed mate bug, fixed weird reference bug, explanation in github push request)
