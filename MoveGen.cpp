@@ -838,7 +838,7 @@ void getKingMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint
         enemyPieces = blackBoards[6];
         myKing = whiteBoards[5];
         myRook = whiteBoards[3];
-        uint64_t ePawn = blackBoards[0], eKnight = blackBoards[1], eBishop = blackBoards[2], eRook = blackBoards[3], eQueen = blackBoards[4], eKing = blackBoards[5];
+        ePawn = blackBoards[0], eKnight = blackBoards[1], eBishop = blackBoards[2], eRook = blackBoards[3], eQueen = blackBoards[4], eKing = blackBoards[5];
     }
     else {
         _BitScanReverse64(&lsb, blackBoards[5]);
@@ -846,7 +846,7 @@ void getKingMoves(int moves[], int& idx, int color, uint64_t whiteBoards[], uint
         piece = k;
         myKing = blackBoards[5];
         myRook = blackBoards[3];
-        uint64_t ePawn = whiteBoards[0], eKnight = whiteBoards[1], eBishop = whiteBoards[2], eRook = whiteBoards[3], eQueen = whiteBoards[4], eKing = whiteBoards[5];
+        ePawn = whiteBoards[0], eKnight = whiteBoards[1], eBishop = whiteBoards[2], eRook = whiteBoards[3], eQueen = whiteBoards[4], eKing = whiteBoards[5];
     }
     uint64_t kingMoves = kingAttacks[lsb] & (miscBoards[1] | enemyPieces);
     while (kingMoves != 0)
@@ -1400,7 +1400,7 @@ void getKingCaptures(int moves[], int& idx, int color, uint64_t whiteBoards[], u
         enemyPieces = blackBoards[6];
         myKing = whiteBoards[5];
         myRook = whiteBoards[3];
-        uint64_t ePawn = blackBoards[0], eKnight = blackBoards[1], eBishop = blackBoards[2], eRook = blackBoards[3], eQueen = blackBoards[4], eKing = blackBoards[5];
+        ePawn = blackBoards[0], eKnight = blackBoards[1], eBishop = blackBoards[2], eRook = blackBoards[3], eQueen = blackBoards[4], eKing = blackBoards[5];
     }
     else {
         _BitScanReverse64(&lsb, blackBoards[5]);
@@ -1408,7 +1408,7 @@ void getKingCaptures(int moves[], int& idx, int color, uint64_t whiteBoards[], u
         piece = k;
         myKing = blackBoards[5];
         myRook = blackBoards[3];
-        uint64_t ePawn = whiteBoards[0], eKnight = whiteBoards[1], eBishop = whiteBoards[2], eRook = whiteBoards[3], eQueen = whiteBoards[4], eKing = whiteBoards[5];
+        ePawn = whiteBoards[0], eKnight = whiteBoards[1], eBishop = whiteBoards[2], eRook = whiteBoards[3], eQueen = whiteBoards[4], eKing = whiteBoards[5];
     }
     uint64_t kingMoves = kingAttacks[lsb] & (enemyPieces);
     while (kingMoves != 0)

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <intrin.h>
 #include <bitset>
+#include <cctype>
 
 
 #include "Globals.h"
@@ -219,10 +220,10 @@ void updateBoard(int board[64], std::vector<std::string>& moves, uint64_t miscBo
             miscBoards[3] ^= one << (getCellNumber(from));
         }
         if (board[getCellNumber(from)] == p && getCellNumber(to) >= 56) { //promotion
-            board[getCellNumber(to)] = pieceToVal[moves[i][4]];
+            board[getCellNumber(to)] = pieceToVal[tolower(moves[i][4])];
         }
         else if (board[getCellNumber(from)] == P && getCellNumber(to) <= 7) {
-            board[getCellNumber(to)] = pieceToVal[moves[i][4]]-6;
+            board[getCellNumber(to)] = pieceToVal[toupper(moves[i][4])];
         }
         else {
             board[getCellNumber(to)] = board[getCellNumber(from)];
@@ -370,7 +371,6 @@ int getCellNumber(std::string cell) {
 }
 
 void addBitBoardPiece(int piece, int dest, uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]) {
-    uint64_t one = 1;
     switch (piece) {
     case P:
         whiteBoards[0] |= one << dest;
@@ -412,7 +412,6 @@ void addBitBoardPiece(int piece, int dest, uint64_t whiteBoards[7], uint64_t bla
 }
 
 void removeBitBoardPiece(int piece, int dest, uint64_t whiteBoards[7], uint64_t blackBoards[7], uint64_t miscBoards[4]) {
-    uint64_t one = 1;
     switch (piece) {
     case P:
         whiteBoards[0] ^= one << dest;
@@ -725,9 +724,9 @@ int getMaterialCount(uint64_t whiteBoards[], uint64_t blackBoards[]) {
     int currPiece = P;
     for (int i = 0; i < 5; i++) {
         std::bitset<64> b(whiteBoards[i]);
-        material += getMaterialValueForTime(currPiece) * b.count();
+        material += getMaterialValueForTime(currPiece) * (int)b.count();
         std::bitset<64> b2(blackBoards[i]);
-        material += getMaterialValueForTime(currPiece+6) * b2.count();
+        material += getMaterialValueForTime(currPiece+6) * (int)b2.count();
         currPiece++;
     }
     return material;
