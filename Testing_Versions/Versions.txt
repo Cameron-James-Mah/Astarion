@@ -46,3 +46,23 @@ V4:
 
 V5: 
 - More bug fixes(fixed promotion bug again, fixed mate bug, fixed weird reference bug, explanation in github push request)
+- first bug free version
+- Time controls change(take 2x time)
+
+V5.1:
+- PV hack
+
+V5.2:
+- TT table fix
+
+V5.3:
+- More aggressive LMR
+
+V5.4:
+- Futility pruning
+
+V5.5:
+- Futility pruning tweak(not when in check)
+- Null move pruning tweak(not when side to move has no minor pieces)
+
+

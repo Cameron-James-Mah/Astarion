@@ -724,9 +724,9 @@ int getMaterialCount(uint64_t whiteBoards[], uint64_t blackBoards[]) {
     int currPiece = P;
     for (int i = 0; i < 5; i++) {
         std::bitset<64> b(whiteBoards[i]);
-        material += getMaterialValueForTime(currPiece) * (int)b.count();
+        material += getMaterialValueForTime(currPiece) * b.count();
         std::bitset<64> b2(blackBoards[i]);
-        material += getMaterialValueForTime(currPiece+6) * (int)b2.count();
+        material += getMaterialValueForTime(currPiece+6) * b2.count();
         currPiece++;
     }
     return material;

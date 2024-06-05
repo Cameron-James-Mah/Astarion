@@ -113,10 +113,7 @@ int main()
                 int material = getMaterialCount(whiteBoards, blackBoards);
                 //Console.WriteLine(time);
                 time = time / estimatedHalfMoves(material);
-                if (time <= 0)
-                {
-                    time = 100;
-                }
+                time *= 2;
                 //time;
             }
             else { //if time not specified
@@ -148,7 +145,6 @@ int main()
         }
         else if (tokens[0] == "position") {
             repetition.clear();
-            clearKillers();
             resetBoard(board2, whiteBoards, blackBoards, miscBoards);
             if (tokens[1] == "fen") {
                 std::string wholeFen = tokens[2] + " " + tokens[3] + " " + tokens[4];
